@@ -7,6 +7,10 @@ import { HelperModule } from './common/helper/helper.module';
 import { CitiesModule } from './modules/cities/cities.module';
 import { CountriesModule } from './modules/countries/countries.module';
 import { CitiesPickupModule } from './modules/cities-pickup/cities-pickup.module';
+import { DocumentsTypesModule } from './modules/documents-types/documents-types.module';
+import { UserTypesModule } from './modules/user-types/user-types.module';
+import { UserStatusModule } from './modules/user-status/user-status.module';
+import { CompaniesPickupsModule } from './modules/companies-pickups/companies-pickups.module';
 
 @Module({
   imports: [
@@ -19,8 +23,12 @@ import { CitiesPickupModule } from './modules/cities-pickup/cities-pickup.module
     CitiesModule,
     CountriesModule,
     CitiesPickupModule,
+    DocumentsTypesModule,
+    UserTypesModule,
+    UserStatusModule,
+    CompaniesPickupsModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

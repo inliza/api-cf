@@ -6,7 +6,7 @@ export class CountriesController {
     constructor(private service: CountriesService) { }
 
     @Get()
-    async byCountry(@Res() res) {
+    async getAll(@Res() res) {
         const result = await this.service.findAll();
        return res.status(result.statusCode).send(result);
     }
