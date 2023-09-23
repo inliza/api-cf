@@ -11,6 +11,7 @@ export class DocumentsTypesService {
         @InjectModel('DocumentsTypes') private readonly model: Model<DocumentsTypes>,
         private readonly _logger: LoggerService
     ) { }
+
     async findAll(): Promise<ServiceResponse> {
         try {
             const list = await this.model.find().exec();
@@ -18,6 +19,36 @@ export class DocumentsTypesService {
         } catch (error) {
             this._logger.error(`DocumentsTypes: Error no controlado findAll ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
+
+    async findById(id: string) {
+        try {
+            const doc = await this.model.findById(id);
+            if (!doc) {
+                return new ServiceResponse(404, "Document Type not found", "", null);
+            }
+            return new ServiceResponse(200, "Ok", "", doc);
+        } catch (error) {
+
+            this._logger.error(`DocumentsTypes: Error no controlado findById ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
+
+    async findByName(name: string) {
+        try {
+            const doc = await this.model.findOne({name: name});
+            if (!doc) {
+                return new ServiceResponse(404, "Document Type not found", "", null);
+            }
+            return new ServiceResponse(200, "Ok", "", doc);
+        } catch (error) {
+
+            this._logger.error(`DocumentsTypes: Error no controlado findByName ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
         }
     }
 }

@@ -27,7 +27,6 @@ export class CompaniesPickupsController {
     }
 
     @Post()
-    @UseGuards(AuthMiddleware)
     async Save(@Req() req, @Res() res) {
         const result = await this.service.savePickups(req.body, req.claims._id);
         return res.status(result.statusCode).send(result);

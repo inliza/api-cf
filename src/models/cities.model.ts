@@ -1,4 +1,3 @@
-// src/city/city.entity.ts
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 

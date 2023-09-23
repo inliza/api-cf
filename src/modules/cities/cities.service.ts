@@ -28,4 +28,19 @@ export class CitiesService {
     async findAll(): Promise<Cities[]> {
         return this.cityModel.find().exec();
     }
+
+    async findById(id:string){
+        try {
+            const city = await this.cityModel.findById(id);
+            if (!city) {
+                return new ServiceResponse(404, "City not found", "", null);
+            }
+            return new ServiceResponse(200, "Ok", "", city);
+        } catch (error) {
+
+            this._logger.error(`Cities: Error no controlado findById ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
 }

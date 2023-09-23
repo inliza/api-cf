@@ -5,7 +5,7 @@ import { HelperModule } from "./helper/helper.module";
 import { AuthMiddleware } from "./middleware/auth.middleware";
 
 @Module({
-    imports: [DatabaseModule,HelperModule],
+    imports: [DatabaseModule, HelperModule],
     providers: [LoggerService, AuthMiddleware],
     exports: [LoggerService, AuthMiddleware]
 })
