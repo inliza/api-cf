@@ -3,6 +3,7 @@ import { CompaniesPickupsService } from "./companies-pickups.service";
 import { Types } from "mongoose";
 import { ServiceResponse } from "src/common/utils/services-response";
 import { AuthMiddleware } from "src/common/middleware/auth.middleware";
+import { AuthCompanyMiddleware } from "src/common/middleware/auth-company.middleware";
 
 @Controller('api/companies-pickup')
 export class CompaniesPickupsController {
@@ -34,7 +35,7 @@ export class CompaniesPickupsController {
 
 
     @Get()
-    @UseGuards(AuthMiddleware)
+    @UseGuards(AuthCompanyMiddleware)
     async getAll(@Req() req, @Res() res) {
       const result = await this.service.getAllPickups(req.claims._id);
       return res.status(result.statusCode).send(result);

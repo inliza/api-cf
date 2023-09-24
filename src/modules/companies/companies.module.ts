@@ -9,6 +9,8 @@ import { UserStatusModule } from "../user-status/user-status.module";
 import { DocumentsTypesModule } from "../documents-types/documents-types.module";
 import { UserTypesModule } from "../user-types/user-types.module";
 import { CitiesModule } from "../cities/cities.module";
+import { HelperModule } from "src/common/helper/helper.module";
+import { NotificationsModule } from "../notifications/notifications.module";
 
 @Module({
     imports: [
@@ -18,9 +20,12 @@ import { CitiesModule } from "../cities/cities.module";
         UserStatusModule,
         DocumentsTypesModule,
         UserTypesModule,
-        CitiesModule
+        CitiesModule,
+        HelperModule,
+        NotificationsModule
     ],
     providers: [CompaniesService],
-    controllers: [CompaniesController]
+    controllers: [CompaniesController],
+    exports: [CompaniesService]
 })
 export class CompaniesModule {}

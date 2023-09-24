@@ -45,7 +45,8 @@ export class UsersService {
 
     async findByEmail(email: string): Promise<ServiceResponse> {
         try {
-            const user = await this.model.findOne({ email: email });
+            const user = await this.model.findOne({ email: email }).populate('userType')
+            .exec();;
             if (!user) {
                 return new ServiceResponse(404, "User not found", "", null);
             }

@@ -11,6 +11,8 @@ import { DocumentsTypesModule } from './modules/documents-types/documents-types.
 import { UserTypesModule } from './modules/user-types/user-types.module';
 import { UserStatusModule } from './modules/user-status/user-status.module';
 import { CompaniesPickupsModule } from './modules/companies-pickups/companies-pickups.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,7 +28,9 @@ import { CompaniesPickupsModule } from './modules/companies-pickups/companies-pi
     DocumentsTypesModule,
     UserTypesModule,
     UserStatusModule,
-    CompaniesPickupsModule
+    CompaniesPickupsModule,
+    AuthModule,
+    NotificationsModule
   ],
   controllers: [AppController],
   providers: [AppService],

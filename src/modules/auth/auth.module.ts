@@ -4,13 +4,15 @@ import { HelperModule } from 'src/common/helper/helper.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
+import { CompaniesModule } from '../companies/companies.module';
 
 
 @Module({
     imports: [
         CommonModule,
         HelperModule,
-        UsersModule
+        UsersModule,
+        CompaniesModule
     ],
     providers: [AuthService],
     controllers: [AuthController],
