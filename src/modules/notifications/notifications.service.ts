@@ -18,6 +18,7 @@ export class NotificationsService {
         try {
             const url = `${this.configService.get('API_NOTIFICATIONS')}${endpoint}`;
             const res = await this.http.post(url, data);
+            this._logger.error(`Notifications: Correo enviado correctamente ${endpoint}`);
             return new ServiceResponse(res.status, "Ok", "Notification send", res.data);
         } catch (error) {
             this._logger.error(`Notifications: Error en envio de notificacion ${endpoint}`);

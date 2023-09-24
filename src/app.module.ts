@@ -13,6 +13,7 @@ import { UserStatusModule } from './modules/user-status/user-status.module';
 import { CompaniesPickupsModule } from './modules/companies-pickups/companies-pickups.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ConfirmationCodesModule } from './modules/confirmation-codes/confirmation-codes.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     UserStatusModule,
     CompaniesPickupsModule,
     AuthModule,
-    NotificationsModule
+    NotificationsModule,
+    ConfirmationCodesModule
   ],
   controllers: [AppController],
   providers: [AppService],

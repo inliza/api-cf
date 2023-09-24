@@ -12,6 +12,7 @@ import { Model } from 'mongoose';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CompanyUpdateDto } from 'src/dto/companies-update.dto';
+import { ConfirmationCodesService } from '../confirmation-codes/confirmation-codes.service';
 
 @Injectable()
 export class CompaniesService {
@@ -23,7 +24,8 @@ export class CompaniesService {
         private readonly _usersTypes: UserTypesService,
         @InjectModel('Companies') private readonly model: Model<Companies>,
         private readonly _logger: LoggerService,
-        private readonly _notifications: NotificationsService
+        private readonly _notifications: NotificationsService,
+        private readonly _codes: ConfirmationCodesService
     ) {
     }
 
@@ -222,6 +224,36 @@ export class CompaniesService {
             return new ServiceResponse(200, "Ok", "", null);
         } catch (error) {
             this._logger.error(`Companies: Error no controlado getById ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
+
+    async forgotPassowrd(email: string): Promise<ServiceResponse> {
+        try {
+            const user = await this._users.findByEmail(email);
+            if (user.statusCode !== 200) {
+                return new ServiceResponse(404, "Informacion", "No pudimos encontrar una cuenta asociada con este correo", null);
+            }
+
+            const company = await this.findByUserId(user.object.id);
+            if (company.statusCode !== 200) {
+                return new ServiceResponse(404, "Informacion", "No pudimos encontrar una cuenta asociada con este correo", null);
+            }
+
+            const generateCode = await this._codes.create(user.object.id, 'Company');
+            if (generateCode.statusCode !== 200) {
+                return new ServiceResponse(400, "Informacion", "No pudimos completar tu solicitud en estos momentos.", null);
+            }
+
+            const res = await this._notifications.send('mail/company/resetPassword', { email: email, name: company.object.name, resetPasswordCode: generateCode.object });
+            if (res.statusCode !== 200) {
+                return new ServiceResponse(400, "Informacion", "No pudimos completar tu solicitud en estos momentos.", null);
+            }
+
+            return new ServiceResponse(200, "Ok", "Su correo de recuperación ha sido enviado correctamente", null);
+
+        } catch (error) {
+            this._logger.error(`Companies: Error no controlado forgotPassowrd ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
     }

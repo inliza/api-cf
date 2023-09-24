@@ -6,6 +6,7 @@ import { ServiceResponse } from "src/common/utils/services-response";
 import { AuthMiddleware } from "src/common/middleware/auth.middleware";
 import { AuthCompanyMiddleware } from "src/common/middleware/auth-company.middleware";
 import { CompanyUpdateDto } from "src/dto/companies-update.dto";
+import { ForgetPasswordDto } from "src/dto/forget-password.dto";
 
 @Controller('api/companies')
 export class CompaniesController {
@@ -49,6 +50,12 @@ export class CompaniesController {
         return res.status(result.statusCode).send(result);
     }
 
+
+    @Post('forgot-password')
+    async ForgetPassword(@Body() payload: ForgetPasswordDto, @Res() res) {
+        const result = await this.service.forgotPassowrd(payload.email);
+        return res.status(result.statusCode).send(result);
+    }
 
 }
 

@@ -33,6 +33,7 @@ export class AuthService {
 
             const company = await this._companies.findByUserId(user.object.id);
             if (company.statusCode !== 200) {
+                
                 return new ServiceResponse(400, "Error", "No se pudo completar su inicio de sesión", null);
             }
 

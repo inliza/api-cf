@@ -11,10 +11,13 @@ import { UserTypesModule } from "../user-types/user-types.module";
 import { CitiesModule } from "../cities/cities.module";
 import { HelperModule } from "src/common/helper/helper.module";
 import { NotificationsModule } from "../notifications/notifications.module";
+import { ConfirmationCodesModule } from "../confirmation-codes/confirmation-codes.module";
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: Companies.name, schema: CompaniesSchema }]),
+        MongooseModule.forFeature([
+            { name: Companies.name, schema: CompaniesSchema },
+        ]),
         CommonModule,
         UsersModule,
         UserStatusModule,
@@ -22,10 +25,11 @@ import { NotificationsModule } from "../notifications/notifications.module";
         UserTypesModule,
         CitiesModule,
         HelperModule,
-        NotificationsModule
+        NotificationsModule,
+        ConfirmationCodesModule
     ],
     providers: [CompaniesService],
     controllers: [CompaniesController],
     exports: [CompaniesService]
 })
-export class CompaniesModule {}
+export class CompaniesModule { }
