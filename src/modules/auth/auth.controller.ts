@@ -10,7 +10,7 @@ export class AuthController {
     constructor(private service: AuthService) { }
 
     @Post('companies/login')
-    async Login(@Body() payload: UsersLoginDto, @Res() res) {
+    async companyLogin(@Body() payload: UsersLoginDto, @Res() res) {
         const result = await this.service.loginCompany(payload);
         return res.status(result.statusCode).send(result);
     }
@@ -30,6 +30,11 @@ export class AuthController {
     }
 
 
-    
+    @Post('clients/login')
+    async clientLogin(@Body() payload: UsersLoginDto, @Res() res) {
+        const result = await this.service.loginClient(payload);
+        return res.status(result.statusCode).send(result);
+    }
+
 
 }

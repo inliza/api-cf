@@ -15,7 +15,7 @@ export class ConfirmationCodesService {
     ) { }
 
 
-    async create(userId: string, type: string): Promise<ServiceResponse> {
+    async create(userId: string, type: string, expireInDays: number): Promise<ServiceResponse> {
         try {
             const code = uuidv4();
             const date = new Date();
@@ -24,7 +24,7 @@ export class ConfirmationCodesService {
                 user: userId,
                 code: code,
                 type: type,
-                expireDate: date.setDate(date.getDate() + 1),
+                expireDate: date.setDate(date.getDate() + expireInDays),
             });
 
             await confirmation.save();
@@ -37,7 +37,7 @@ export class ConfirmationCodesService {
 
     }
 
-    async check(code: string): Promise<ServiceResponse> {
+    async check(code: string, type:string): Promise<ServiceResponse> {
         try {
             const date = new Date();
             const verCode = await this.model.findOne({
@@ -46,6 +46,7 @@ export class ConfirmationCodesService {
                 expireDate: {
                     $gte: date.toISOString(),
                 },
+                type: type
             });
             if (!verCode) {
                 return new ServiceResponse(400, "Error", "Enlance no disponible", null);
@@ -80,7 +81,7 @@ export class ConfirmationCodesService {
                     $gte: date.toISOString(),
                 },
             });
-            if (!verCode) {
+            if (!verCode) {     
                 return new ServiceResponse(400, "Error", "Enlance no disponible", null);
             }
             return new ServiceResponse(200, "Ok", "Enlance validado", verCode);

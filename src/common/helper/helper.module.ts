@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from './token.service';
 import { HttpModule } from '@nestjs/axios';
 import { HttpCallService } from './http-call.service';
+import { OperationsService } from './operations.service';
 
 @Module({
     imports: [
@@ -14,8 +15,9 @@ import { HttpCallService } from './http-call.service';
     ],
     providers: [
         TokenService,
-        HttpCallService
+        HttpCallService,
+        OperationsService
     ],
-    exports: [TokenService, HttpCallService]
+    exports: [TokenService, HttpCallService, OperationsService]
 })
 export class HelperModule { }

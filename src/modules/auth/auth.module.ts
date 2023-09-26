@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { ConfirmationCodesModule } from '../confirmation-codes/confirmation-codes.module';
+import { ClientsModule } from '../clients/clients.module';
+import { UserTypesModule } from '../user-types/user-types.module';
 
 
 @Module({
@@ -14,7 +16,9 @@ import { ConfirmationCodesModule } from '../confirmation-codes/confirmation-code
         HelperModule,
         UsersModule,
         CompaniesModule,
-        ConfirmationCodesModule
+        ConfirmationCodesModule,
+        ClientsModule,
+        UserTypesModule
     ],
     providers: [AuthService],
     controllers: [AuthController],

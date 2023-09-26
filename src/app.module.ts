@@ -14,6 +14,8 @@ import { CompaniesPickupsModule } from './modules/companies-pickups/companies-pi
 import { AuthModule } from './modules/auth/auth.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ConfirmationCodesModule } from './modules/confirmation-codes/confirmation-codes.module';
+import { GenderModule } from './modules/gender/gender.module';
+import { ClientsModule } from './modules/clients/clients.module';
 
 @Module({
   imports: [
@@ -32,7 +34,9 @@ import { ConfirmationCodesModule } from './modules/confirmation-codes/confirmati
     CompaniesPickupsModule,
     AuthModule,
     NotificationsModule,
-    ConfirmationCodesModule
+    ConfirmationCodesModule,
+    GenderModule,
+    ClientsModule
   ],
   controllers: [AppController],
   providers: [AppService],

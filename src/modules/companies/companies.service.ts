@@ -239,8 +239,7 @@ export class CompaniesService {
             if (company.statusCode !== 200) {
                 return new ServiceResponse(404, "Informacion", "No pudimos encontrar una cuenta asociada con este correo", null);
             }
-
-            const generateCode = await this._codes.create(user.object.id, 'Company');
+            const generateCode = await this._codes.create(user.object.id, 'Company', 1);
             if (generateCode.statusCode !== 200) {
                 return new ServiceResponse(400, "Informacion", "No pudimos completar tu solicitud en estos momentos.", null);
             }
@@ -259,7 +258,7 @@ export class CompaniesService {
     }
 
     async checkCode(code: string): Promise<ServiceResponse> {
-        return this._codes.check(code);
+        return this._codes.check(code, "Company");
     }
 
     async validateCompany(email: string): Promise<ServiceResponse> {
