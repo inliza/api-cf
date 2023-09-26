@@ -1,16 +1,35 @@
-import { Body, Controller, Post, Res } from "@nestjs/common";
+import { Body, Controller, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UsersLoginDto } from "src/dto/users-login.dto";
+import { ResetPasswordDto } from "src/dto/reset-password.dto";
+import { AuthCompanyMiddleware } from "src/common/middleware/auth-company.middleware";
+import { ChangePasswordDto } from "src/dto/change-password.dto";
 
 @Controller('api/auth')
 export class AuthController {
     constructor(private service: AuthService) { }
 
-
-
-    @Post('clogin')
-    async Save(@Body() payload: UsersLoginDto, @Res() res) {
+    @Post('companies/login')
+    async Login(@Body() payload: UsersLoginDto, @Res() res) {
         const result = await this.service.loginCompany(payload);
         return res.status(result.statusCode).send(result);
     }
+
+    @Post('companies/reset-password')
+    async ResetPassword(@Body() payload: ResetPasswordDto, @Res() res) {
+        const result = await this.service.resetPasswordCompany(payload);
+        return res.status(result.statusCode).send(result);
+    }
+
+    @Post('companies/change-password')
+    @UseGuards(AuthCompanyMiddleware)
+
+    async ChangePassword(@Body() payload: ChangePasswordDto,@Req() req, @Res() res) {
+        const result = await this.service.changePasswordCompany(payload, req.claims._id);
+        return res.status(result.statusCode).send(result);
+    }
+
+
+    
+
 }

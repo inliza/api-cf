@@ -228,7 +228,7 @@ export class CompaniesService {
         }
     }
 
-    async forgotPassowrd(email: string): Promise<ServiceResponse> {
+    async forgotPassword(email: string): Promise<ServiceResponse> {
         try {
             const user = await this._users.findByEmail(email);
             if (user.statusCode !== 200) {
@@ -251,6 +251,54 @@ export class CompaniesService {
             }
 
             return new ServiceResponse(200, "Ok", "Su correo de recuperación ha sido enviado correctamente", null);
+
+        } catch (error) {
+            this._logger.error(`Companies: Error no controlado forgotPassowrd ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
+
+    async checkCode(code: string): Promise<ServiceResponse> {
+        return this._codes.check(code);
+    }
+
+    async validateCompany(email: string): Promise<ServiceResponse> {
+        try {
+
+            const user = await this._users.findByEmail(email);
+            if (user.statusCode !== 200) {
+                return new ServiceResponse(404, "Informacion", "No pudimos encontrar una cuenta asociada con este correo", null);
+            }
+
+            const company = await this.findByUserId(user.object.id);
+            if (company.statusCode !== 200) {
+                return new ServiceResponse(404, "Informacion", "No pudimos encontrar una cuenta asociada con este correo", null);
+            }
+
+            const userStatus = await this._userStatus.findByName('Active');
+            if (userStatus.statusCode !== 200) {
+                return new ServiceResponse(400, "", userStatus.statusCode === 404 ? "Error en configuracion. userStatus" : userStatus.message, null);
+            }
+
+            if (company.object.userStatus.id == userStatus.object.id) {
+                return new ServiceResponse(400, "Informacion", "Su cuenta ya se encuentra activa", null);
+            }
+
+            const update = await this.model.findByIdAndUpdate(
+                company.object.id,
+                {
+                    userStatus: userStatus.object.id
+                }
+            );
+
+            if (!update) {
+                return new ServiceResponse(404,
+                    "Error",
+                    "The company with the given ID was not found.",
+                    email)
+            }
+
+            return new ServiceResponse(200, "Ok", "Su cuenta ha sido activada", null);
 
         } catch (error) {
             this._logger.error(`Companies: Error no controlado forgotPassowrd ${error}`);

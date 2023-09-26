@@ -46,7 +46,7 @@ export class UsersService {
     async findByEmail(email: string): Promise<ServiceResponse> {
         try {
             const user = await this.model.findOne({ email: email }).populate('userType')
-            .exec();;
+                .exec();;
             if (!user) {
                 return new ServiceResponse(404, "User not found", "", null);
             }
@@ -60,5 +60,38 @@ export class UsersService {
 
     }
 
+    async findById(id: string): Promise<ServiceResponse> {
+        try {
+            const user = await this.model.findById(id);
+            if (!user) {
+                return new ServiceResponse(404, "User not found", "", null);
+            }
+            return new ServiceResponse(200, "Ok", "", user);
+        } catch (error) {
+
+            this._logger.error(`Users: Error no controlado findById ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+
+    }
+
+    async changePassword(id: string, password: string): Promise<ServiceResponse> {
+        try {
+            const update = await this.model.findByIdAndUpdate(id, {
+                password: password,
+            });
+
+            if (!update) {
+                return new ServiceResponse(404, "Error", "No se pudo actualizar la clave para el user especificado", id);
+            } else {
+                return new ServiceResponse(200, "Ok", "Clave actualizada", id);
+            }
+        } catch (error) {
+            this._logger.error(`Users: Error no controlado changePassword ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
 
 }

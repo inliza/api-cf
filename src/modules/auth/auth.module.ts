@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
+import { ConfirmationCodesModule } from '../confirmation-codes/confirmation-codes.module';
 
 
 @Module({
@@ -12,7 +13,8 @@ import { CompaniesModule } from '../companies/companies.module';
         CommonModule,
         HelperModule,
         UsersModule,
-        CompaniesModule
+        CompaniesModule,
+        ConfirmationCodesModule
     ],
     providers: [AuthService],
     controllers: [AuthController],

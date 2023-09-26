@@ -13,7 +13,7 @@ export class UserStatusService {
     ) { }
     async findAll(): Promise<ServiceResponse> {
         try {
-            const list = await this.model.find().exec();
+            const list = await this.model.find();
             return new ServiceResponse(200, "Ok", "", list);
         } catch (error) {
             this._logger.error(`UserStatus: Error no controlado findAll ${error}`);
@@ -23,7 +23,7 @@ export class UserStatusService {
 
     async findByName(name: string) {
         try {
-            const status = await this.model.findOne({ name: name });
+            const status = await this.model.findOne({ name: name }).exec();
             if (!status) {
                 return new ServiceResponse(404, "User status not found", "", null);
             }

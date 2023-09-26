@@ -37,4 +37,58 @@ export class ConfirmationCodesService {
 
     }
 
+    async check(code: string): Promise<ServiceResponse> {
+        try {
+            const date = new Date();
+            const verCode = await this.model.findOne({
+                code: code,
+                validated: false,
+                expireDate: {
+                    $gte: date.toISOString(),
+                },
+            });
+            if (!verCode) {
+                return new ServiceResponse(400, "Error", "Enlance no disponible", null);
+            }
+            return new ServiceResponse(200, "Ok", "Enlance validado", null);
+
+        } catch (error) {
+            this._logger.error(`ConfirmationCodesService: Error no controlado check ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+
+    }
+
+    async changeStatus(id: string): Promise<void> {
+        try {
+            await this.model.findByIdAndUpdate(id, {
+                validated: true,
+            });
+        } catch (error) {
+            this._logger.error(`ConfirmationCodesService: Error no controlado changeStatus ${error}`);
+
+        }
+    }
+
+    async getOne(code: string): Promise<ServiceResponse> {
+        try {
+            const date = new Date();
+            const verCode = await this.model.findOne({
+                code: code,
+                validated: false,
+                expireDate: {
+                    $gte: date.toISOString(),
+                },
+            });
+            if (!verCode) {
+                return new ServiceResponse(400, "Error", "Enlance no disponible", null);
+            }
+            return new ServiceResponse(200, "Ok", "Enlance validado", verCode);
+
+        } catch (error) {
+            this._logger.error(`ConfirmationCodesService: Error no controlado getOne ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
+
 }
