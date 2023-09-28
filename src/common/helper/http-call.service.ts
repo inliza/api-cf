@@ -7,8 +7,8 @@ import { Observable, lastValueFrom, map } from 'rxjs';
 export class HttpCallService {
     constructor(private readonly httpService: HttpService) { }
 
-    async get(url: string, data?: any): Promise<any> {
-        const config: AxiosRequestConfig = this.getHeaders();
+    async get(url: string, data?: any, headers? : AxiosRequestConfig): Promise<any> {
+        const config: AxiosRequestConfig = headers ?? this.getHeaders();
         config.data = data;
         return lastValueFrom(this.httpService
             .get(url, config)
@@ -16,8 +16,8 @@ export class HttpCallService {
             ));
     }
 
-    async post(url: string, data?: any): Promise<any> {
-        const config: AxiosRequestConfig = this.getHeaders();
+    async post(url: string, data?: any,  headers? : AxiosRequestConfig): Promise<any> {
+        const config: AxiosRequestConfig = headers ?? this.getHeaders();
         return lastValueFrom(this.httpService
             .post(url, data, config)
             .pipe(map((response) => response)

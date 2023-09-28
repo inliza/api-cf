@@ -16,6 +16,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ConfirmationCodesModule } from './modules/confirmation-codes/confirmation-codes.module';
 import { GenderModule } from './modules/gender/gender.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { SubscriptionsPlansModule } from './modules/subscriptions-plans/subscriptions-plans.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -36,7 +38,9 @@ import { ClientsModule } from './modules/clients/clients.module';
     NotificationsModule,
     ConfirmationCodesModule,
     GenderModule,
-    ClientsModule
+    ClientsModule,
+    SubscriptionsPlansModule,
+    SubscriptionsModule
   ],
   controllers: [AppController],
   providers: [AppService],

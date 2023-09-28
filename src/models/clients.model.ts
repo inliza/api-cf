@@ -41,7 +41,7 @@ export class Clients extends Document {
     document: string;
 
     @Prop({
-        minlength: 5,
+        minlength: 1,
         maxlength: 1024,
     })
     address: string;

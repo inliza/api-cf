@@ -38,7 +38,7 @@ export class CompaniesController {
 
     @Get()
     @UseGuards(AuthMiddleware)
-    async getAll(@Req() req, @Res() res) {
+    async getAll(@Res() res) {
         const result = await this.service.getAll();
         return res.status(result.statusCode).send(result);
     }

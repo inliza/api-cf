@@ -11,6 +11,7 @@ import { DocumentsTypesModule } from "../documents-types/documents-types.module"
 import { UserTypesModule } from "../user-types/user-types.module";
 import { NotificationsModule } from "../notifications/notifications.module";
 import { ConfirmationCodesModule } from "../confirmation-codes/confirmation-codes.module";
+import { GenderModule } from "../gender/gender.module";
 
 @Module({
     imports: [
@@ -22,8 +23,8 @@ import { ConfirmationCodesModule } from "../confirmation-codes/confirmation-code
         UserTypesModule,
         HelperModule,
         NotificationsModule,
-        ConfirmationCodesModule
-
+        ConfirmationCodesModule,
+        GenderModule
     ],
     providers: [ClientsService],
     controllers: [ClientsController],
