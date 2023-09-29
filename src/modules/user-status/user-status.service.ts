@@ -21,7 +21,7 @@ export class UserStatusService {
         }
     }
 
-    async findByName(name: string) {
+    async findByName(name: string):Promise<ServiceResponse>  {
         try {
             const status = await this.model.findOne({ name: name }).exec();
             if (!status) {
@@ -34,7 +34,7 @@ export class UserStatusService {
         }
     }
 
-    async findById(id: string) {
+    async findById(id: string): Promise<ServiceResponse> {
         try {
             const status = await this.model.findById(id);
             if (!status) {

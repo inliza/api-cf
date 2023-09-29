@@ -18,6 +18,15 @@ import { GenderModule } from './modules/gender/gender.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { SubscriptionsPlansModule } from './modules/subscriptions-plans/subscriptions-plans.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { BookingStatusModule } from './modules/booking-status/booking-status.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
+import { MakesModule } from './modules/makes/makes.module';
+import { ModelsModule } from './modules/models/models.module';
+import { VehiclesFuelModule } from './modules/vehicles-fuel/vehicles-fuel.module';
+import { VehiclesTypesModule } from './modules/vehicles-types/vehicles-types.module';
+import { VehiclesStatusModule } from './modules/vehicles-status/vehicles-status.module';
+import { VehiclesRentCarsModule } from './modules/vehicles-rent-cars/vehicles-rent-cars.module';
+import { YearsModule } from './modules/years/years.module';
 
 @Module({
   imports: [
@@ -40,7 +49,16 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
     GenderModule,
     ClientsModule,
     SubscriptionsPlansModule,
-    SubscriptionsModule
+    SubscriptionsModule,
+    BookingStatusModule,
+    BookingsModule,
+    MakesModule,
+    ModelsModule,
+    VehiclesFuelModule,
+    VehiclesTypesModule,
+    VehiclesStatusModule,
+    VehiclesRentCarsModule,
+    YearsModule
   ],
   controllers: [AppController],
   providers: [AppService],

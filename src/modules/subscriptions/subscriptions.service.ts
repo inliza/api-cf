@@ -8,6 +8,7 @@ import { ServiceResponse } from "src/common/utils/services-response";
 import { SubscriptionsCreateDto } from "src/dto/subscriptions-create.dto";
 import { Subscriptions } from "src/models/subscriptions.model";
 import { SubscriptionsPlansService } from "../subscriptions-plans/subscriptions-plans.service";
+import { SubscriptionsCancelDto } from "src/dto/subscriptions-cancel.dto";
 
 @Injectable()
 export class SubscriptionsService {
@@ -67,17 +68,17 @@ export class SubscriptionsService {
 
     }
 
-    async cancel(subId: string): Promise<ServiceResponse> {
+    async cancel(payload: SubscriptionsCancelDto): Promise<ServiceResponse> {
 
         try {
-            const sub = await this.findById(subId);
+            const sub = await this.findById(payload.subId);
             if (sub.statusCode !== 200) {
                 return new ServiceResponse(400, "", sub.statusCode === 404 ? "Esta subscripcion no existe" : "No se pudo completar su cancelacion en estos momentos", null);
             }
             const url = `${process.env.PAYPAL_URL}v1/billing/subscriptions/${sub.object.paypalSubscriptionId}/cancel`
             const res = await this.http.post(url, null, this.getPaypalHeaders())
             console.log(`Respuesta de cancelar subscripcion ${res.data}`)
-            this.model.findByIdAndUpdate(subId, {
+            this.model.findByIdAndUpdate(payload.subId, {
                 deleted: true,
             });
 

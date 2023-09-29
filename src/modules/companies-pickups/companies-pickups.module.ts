@@ -17,7 +17,9 @@ import { HelperModule } from 'src/common/helper/helper.module';
         ]),
         CommonModule,
         HelperModule
-    ], providers: [CompaniesPickupsService],
+    ], 
+    providers: [CompaniesPickupsService],
+    exports: [CompaniesPickupsService],
     controllers: [CompaniesPickupsController]
 })
 export class CompaniesPickupsModule { }

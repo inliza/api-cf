@@ -1,4 +1,3 @@
-// src/country/country.entity.ts
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
