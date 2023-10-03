@@ -10,7 +10,8 @@ import { BookingsModule } from '../bookings/bookings.module';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: VehicleRentCar.name, schema: VehicleRentCarSchema }]),
+        MongooseModule.forFeature([
+            { name: VehicleRentCar.name, schema: VehicleRentCarSchema }]),
         CommonModule,
         VehiclesStatusModule,
         CompaniesPickupsModule,

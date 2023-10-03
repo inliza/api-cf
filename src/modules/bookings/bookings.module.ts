@@ -6,13 +6,23 @@ import { BookingsService } from './bookings.service';
 import { BookingsController } from './bookings.controller';
 import { BookingStatusModule } from '../booking-status/booking-status.module';
 import { HelperModule } from 'src/common/helper/helper.module';
+import { ClientsModule } from '../clients/clients.module';
+import { VehiclesRentCarsModule } from '../vehicles-rent-cars/vehicles-rent-cars.module';
+import { VehicleRentCar, VehicleRentCarSchema } from 'src/models/vehicles-rent-cars.model';
+import { VehiclesStatusModule } from '../vehicles-status/vehicles-status.module';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: Bookings.name, schema: BookingSchema }]),
+        MongooseModule.forFeature([
+            { name: Bookings.name, schema: BookingSchema },
+            { name: VehicleRentCar.name, schema: VehicleRentCarSchema },
+
+        ]),
         CommonModule,
         BookingStatusModule,
-        HelperModule
+        HelperModule,
+        ClientsModule,
+        VehiclesStatusModule
     ],
     providers: [BookingsService],
     controllers: [BookingsController],

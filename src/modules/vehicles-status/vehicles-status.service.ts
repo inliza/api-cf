@@ -38,5 +38,20 @@ export class VehiclesStatusService {
         }
     }
 
+    async findById(id: string): Promise<ServiceResponse> {
+        try {
+            const status = await this.model.findById(id);
+            if (!status) {
+                return new ServiceResponse(404, "VehiclesStatus not found", "", null);
+            }
+            return new ServiceResponse(200, "Ok", "", status);
+        } catch (error) {
+
+            this._logger.error(`VehiclesStatus: Error no controlado findById ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+
+    }
 
 }

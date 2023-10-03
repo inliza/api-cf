@@ -37,7 +37,7 @@ export class DocumentsTypesService {
         }
     }
 
-    async findByName(name: string) {
+    async findByName(name: string) : Promise<ServiceResponse> {
         try {
             const doc = await this.model.findOne({name: name});
             if (!doc) {

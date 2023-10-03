@@ -27,6 +27,10 @@ import { VehiclesTypesModule } from './modules/vehicles-types/vehicles-types.mod
 import { VehiclesStatusModule } from './modules/vehicles-status/vehicles-status.module';
 import { VehiclesRentCarsModule } from './modules/vehicles-rent-cars/vehicles-rent-cars.module';
 import { YearsModule } from './modules/years/years.module';
+import { PaymentsClientsModule } from './modules/payments-client/payments-client.module';
+import { PaymentsStatusModule } from './modules/payments-status/payments-status.module';
+import { PaymentsTypesModule } from './modules/payments-types/payments-types.module';
+import { PaymentsChannelsModule } from './modules/payments-channels/payments-channels.module';
 
 @Module({
   imports: [
@@ -58,7 +62,11 @@ import { YearsModule } from './modules/years/years.module';
     VehiclesTypesModule,
     VehiclesStatusModule,
     VehiclesRentCarsModule,
-    YearsModule
+    YearsModule,
+    PaymentsClientsModule,
+    PaymentsStatusModule,
+    PaymentsTypesModule,
+    PaymentsChannelsModule
   ],
   controllers: [AppController],
   providers: [AppService],
