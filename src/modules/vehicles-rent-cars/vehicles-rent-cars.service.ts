@@ -9,6 +9,12 @@ import { VehiclesAvailablesDto } from "src/dto/vehicles-available.dto";
 import { CompaniesPickupsService } from "../companies-pickups/companies-pickups.service";
 import { BookingsService } from "../bookings/bookings.service";
 import { VehiclesChangeStatusDto } from "src/dto/vehicles-change-status.dto";
+import { CreateVehicleDto } from "src/dto/vehicles-create.dto";
+import { MakesService } from "../makes/makes.service";
+import { ModelsService } from "../models/models.service";
+import { VehiclesFuelService } from "../vehicles-fuel/vehicles-fuel.service";
+import { VehiclesTypesService } from "../vehicles-types/vehicles-types.service";
+import { HttpCallService } from "src/common/helper/http-call.service";
 
 @Injectable()
 export class VehiclesRentCarsService {
@@ -18,7 +24,13 @@ export class VehiclesRentCarsService {
         private readonly _logger: LoggerService,
         private readonly _status: VehiclesStatusService,
         private readonly _pickups: CompaniesPickupsService,
-        private readonly _bookings: BookingsService
+        private readonly _bookings: BookingsService,
+        private readonly _make: MakesService,
+        private readonly _models: ModelsService,
+        private readonly _fuel: VehiclesFuelService,
+        private readonly _types: VehiclesTypesService,
+        private readonly http: HttpCallService,
+
     ) { }
 
 
@@ -206,6 +218,42 @@ export class VehiclesRentCarsService {
         }
 
     }
+
+    async create(payload: CreateVehicleDto): Promise<ServiceResponse> {
+        try {
+
+            const make = await this._make.findById(payload.makeId);
+            if (make.statusCode !== 200) {
+                return make;
+            }
+            const model = await this._models.findById(payload.modelId);
+            if (model.statusCode !== 200) {
+                return model;
+            }
+            const fuelType = await this._fuel.findById(payload.fuelTypeId);
+            if (fuelType.statusCode !== 200) {
+                return fuelType;
+            }
+            const validateStatus = await this._status.findByName("Disponible");
+            if (validateStatus.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "Status are not defined", null);
+            }
+            const type = await this._types.findById(payload.vehicleTypeId);
+            if (type.statusCode !== 200) {
+                return type;
+            }
+
+            // const url = `${this.configService.get('API_NOTIFICATIONS')}${endpoint}`;
+            // const res = await this.http.post(url, data);
+  
+            return new ServiceResponse(200, "", "", null);
+        }
+        catch (error) {
+            this._logger.error(`VehiclesRentCars: Error no controlado getAvailable ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
+
 
 
 

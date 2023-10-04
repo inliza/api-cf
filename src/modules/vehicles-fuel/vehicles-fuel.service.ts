@@ -24,4 +24,19 @@ export class VehiclesFuelService {
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
     }
+
+    async findById(id:string){
+        try {
+            const make = await this.model.findById(id);
+            if (!make) {
+                return new ServiceResponse(404, "Fuel not found", "", null);
+            }
+            return new ServiceResponse(200, "Ok", "", make);
+        } catch (error) {
+
+            this._logger.error(`VehiclesFuel: Error no controlado findById ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
 }

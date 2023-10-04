@@ -7,6 +7,11 @@ import { VehiclesRentCarsController } from './vehicles-rent-cars.controller';
 import { VehiclesStatusModule } from '../vehicles-status/vehicles-status.module';
 import { CompaniesPickupsModule } from '../companies-pickups/companies-pickups.module';
 import { BookingsModule } from '../bookings/bookings.module';
+import { HelperModule } from 'src/common/helper/helper.module';
+import { MakesModule } from '../makes/makes.module';
+import { ModelsModule } from '../models/models.module';
+import { VehiclesFuelModule } from '../vehicles-fuel/vehicles-fuel.module';
+import { VehiclesTypesModule } from '../vehicles-types/vehicles-types.module';
 
 @Module({
     imports: [
@@ -15,7 +20,12 @@ import { BookingsModule } from '../bookings/bookings.module';
         CommonModule,
         VehiclesStatusModule,
         CompaniesPickupsModule,
-        BookingsModule
+        BookingsModule,
+        HelperModule,
+        MakesModule,
+        ModelsModule,
+        VehiclesFuelModule,
+        VehiclesTypesModule
     ],
     providers:[VehiclesRentCarsService],
     controllers: [VehiclesRentCarsController],
