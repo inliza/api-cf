@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Req, Res, UseGuards } from "@nestjs/common";
 import { VehiclesRentCarsService } from "./vehicles-rent-cars.service";
 import { AuthCompanyMiddleware } from "src/common/middleware/auth-company.middleware";
 import { VehiclesAvailablesDto } from "src/dto/vehicles-available.dto";
 import { CreateVehicleDto } from "src/dto/vehicles-create.dto";
+import { UpdateVehicleDto } from "src/dto/vehicles-update.dto";
 
 @Controller('api/vvehicles-rent-cars')
 export class VehiclesRentCarsController {
@@ -29,10 +30,16 @@ export class VehiclesRentCarsController {
     }
 
     @Post()
-    async Create(@Body() payload: CreateVehicleDto, @Res() res) {
-        const result = await this.service.create(payload);
+    @UseGuards(AuthCompanyMiddleware)
+    async Create(@Req() req, @Body() payload: CreateVehicleDto, @Res() res) {
+        const result = await this.service.create(payload, req.claims.companyId);
         return res.status(result.statusCode).send(result);
     }
 
-
+    @Put()
+    @UseGuards(AuthCompanyMiddleware)
+    async Update(@Req() req, @Body() payload: UpdateVehicleDto, @Res() res) {
+        const result = await this.service.update(payload);
+        return res.status(result.statusCode).send(result);
+    }
 }

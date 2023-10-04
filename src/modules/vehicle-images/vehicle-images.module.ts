@@ -7,6 +7,7 @@ import { HelperModule } from 'src/common/helper/helper.module';
 @Module({
     imports: [CommonModule, HelperModule],
     providers: [VehiclesImagesService],
-    controllers: [ImagesController]
+    controllers: [ImagesController],
+    exports: [VehiclesImagesService]
 })
 export class VehicleImagesModule {}

@@ -12,6 +12,7 @@ import { MakesModule } from '../makes/makes.module';
 import { ModelsModule } from '../models/models.module';
 import { VehiclesFuelModule } from '../vehicles-fuel/vehicles-fuel.module';
 import { VehiclesTypesModule } from '../vehicles-types/vehicles-types.module';
+import { VehicleImagesModule } from '../vehicle-images/vehicle-images.module';
 
 @Module({
     imports: [
@@ -25,7 +26,8 @@ import { VehiclesTypesModule } from '../vehicles-types/vehicles-types.module';
         MakesModule,
         ModelsModule,
         VehiclesFuelModule,
-        VehiclesTypesModule
+        VehiclesTypesModule,
+        VehicleImagesModule
     ],
     providers:[VehiclesRentCarsService],
     controllers: [VehiclesRentCarsController],

@@ -1,13 +1,14 @@
 import { IsMongoId, IsNumber, IsString, IsArray, Min, MinLength, IsNotEmpty } from 'class-validator';
 
-export class CreateVehicleDto {
-  @IsNotEmpty()
+export class UpdateVehicleDto {
+
   @IsMongoId()
-  makeId: string;
+  @IsNotEmpty()
+  _id: string;
 
   @IsNotEmpty()
   @IsMongoId()
-  companyId: string;
+  makeId: string;
 
   @IsNotEmpty()
   @IsMongoId()
@@ -25,6 +26,7 @@ export class CreateVehicleDto {
   @Min(2000)
   year: number;
 
+  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   priceByDay: number;
@@ -39,5 +41,5 @@ export class CreateVehicleDto {
 
   @IsArray()
   @MinLength(1)
-  images: string[];
+  images: any[];
 }
