@@ -41,8 +41,9 @@ export class VehiclesRentCarsService {
                 { companyId: company, deleted: false },
                 { companyId: 0, deleted: 0 }
             )
-                .populate("vehicleFuelType", "name -_id")
-                .populate("vehicleType", "name -_id");
+                .populate("make", "name -_id")
+                .populate("vehiclesFuel", "name -_id")
+                .populate("vehiclesTypes", "name -_id");
 
             return new ServiceResponse(200, "Ok", "", vehicles);
         } catch (error) {
@@ -58,13 +59,13 @@ export class VehiclesRentCarsService {
                 return new ServiceResponse(400, "Error", "Status are not defined", null);
             }
 
-            const vehicle = await this.model.find({
+            const vehicle = await this.model.findOne({
                 _id: vehicleId,
                 deleted: false,
-                vehicleStatus: validateStatus.object.id,
+                vehiclesStatus: validateStatus.object.id,
             })
-                .populate("vehicleFuelType", "name")
-                .populate("vehicleType", "name");
+                .populate("vehiclesFuel", "name -_id")
+                .populate("vehiclesTypes", "name -_id");
             return new ServiceResponse(vehicle ? 200 : 404, "", "", vehicle);
         } catch (error) {
             this._logger.error(`VehiclesRentCars: Error no controlado getProfile ${error}`);
@@ -92,15 +93,15 @@ export class VehiclesRentCarsService {
 
             const vehicles = await this.model.find(
                 {
-                    vehicleStatus: validateStatus.object.id,
+                    vehiclesStatus: validateStatus.object.id,
                     deleted: false,
                     companyId: { $in: companiesByPickup.object.companies },
                     _id: { $nin: notAvailableList.object },
                 },
                 { deleted: 0 }
             )
-                .populate("vehicleFuelType", "name -_id")
-                .populate("vehicleType", "name -_id");
+                .populate("vehiclesFuel", "name -_id")
+                .populate("vehiclesTypes", "name -_id");
 
             return new ServiceResponse(200, "", "", vehicles);
         }
@@ -125,43 +126,44 @@ export class VehiclesRentCarsService {
 
             const vehicles = await this.model.aggregate([
                 {
-                    $match: {
-                        deleted: false,
-                        vehicleStatus: validateStatus.object.id,
-                        _id: { $nin: notAvailableList.object },
-                    },
+                  $match: {
+                    deleted: false,
+                    _id: { $nin: notAvailableList.object },
+                    vehiclesStatus: validateStatus.object._id,
+                  },
                 },
-                {
-                    $lookup: {
-                        from: "vehiclesfuels",
-                        localField: "vehicleFuelType",
-                        foreignField: "_id",
-                        as: "vehicleFuelType",
-                    },
-                },
-                {
-                    $lookup: {
-                        from: "vehiclestypes",
-                        localField: "vehicleType",
-                        foreignField: "_id",
-                        as: "vehicleType",
-                    },
-                },
-                { $unwind: "$vehicleType" },
-                { $unwind: "$vehicleFuelType" },
                 { $sample: { size: 8 } },
                 {
-                    $group: {
-                        _id: "$_id",
-                        result: { $push: "$$ROOT" },
-                    },
+                  $lookup: {
+                    from: 'vehiclestypes',
+                    localField: 'vehiclesTypes',
+                    foreignField: '_id',
+                    as: 'vehiclesTypes',
+                  },
                 },
                 {
-                    $replaceRoot: {
-                        newRoot: { $first: "$result" },
-                    },
+                  $lookup: {
+                    from: 'vehiclesfuels',
+                    localField: 'vehiclesFuel',
+                    foreignField: '_id',
+                    as: 'vehiclesFuel',
+                  },
                 },
-            ]);
+                {
+                    $group: {
+                      _id: '$_id',
+                      result: { $push: '$$ROOT' },
+                    },
+                  },
+                  {
+                    $unwind: '$result',
+                  },
+                  {
+                    $replaceRoot: {
+                      newRoot: '$result',
+                    },
+                  },
+              ]);              
 
             return new ServiceResponse(200, "Ok", "", vehicles);
         } catch (error) {
@@ -191,7 +193,7 @@ export class VehiclesRentCarsService {
             }
             const update = await this.model.findByIdAndUpdate(payload.vehicleId,
                 {
-                    vehicleStatus: validateStatus.object.id,
+                    vehiclesStatus: validateStatus.object.id,
                 }
             );
             if (!update) {
@@ -243,7 +245,9 @@ export class VehiclesRentCarsService {
             if (type.statusCode !== 200) {
                 return type;
             }
-            const images = await this._images.uploadImages(payload.images);
+            const payloadImages = payload.images.map((obj) => obj.FileImage);
+
+            const images = await this._images.uploadImages(payloadImages);
             if (images.statusCode !== 200) {
                 return new ServiceResponse(400, "Error", "Ha ocurrido un error guardando el vehículo.", payload);
             }
@@ -259,9 +263,9 @@ export class VehiclesRentCarsService {
                 companyId: companyId,
                 year: payload.year,
                 priceByDay: payload.priceByDay,
-                vehicleType: type.object.id,
-                vehicleFuelType: fuelType.object.id,
-                vehicleStatus: validateStatus.object.idid,
+                vehiclesTypes: type.object.id,
+                vehiclesFuel: fuelType.object.id,
+                vehiclesStatus: validateStatus.object.id,
                 coinType: payload.coinType,
                 placa: payload.placa,
                 images: images.object,
@@ -278,75 +282,75 @@ export class VehiclesRentCarsService {
 
     async update(payload: UpdateVehicleDto): Promise<ServiceResponse> {
         try {
-          const vehic = await this.model.findById(payload._id);
-      
-          if (!vehic) {
-            return new ServiceResponse(400, "Error", "Este vehículo no existe", null);
-          }
-      
-          const make = await this.fetchItemById(payload.makeId, this._make);
-          const model = await this.fetchItemById(payload.modelId, this._models);
-          const fuelType = await this.fetchItemById(payload.fuelTypeId, this._fuel);
-          const type = await this.fetchItemById(payload.vehicleTypeId, this._types);
-      
-          const [imgs, imgsToDelete] = this.processImages(payload.images, vehic.images);
-      
-          const objToUpdate = {
-            make: {
-              _id: make.object.id,
-              name: make.object.name,
-            },
-            model: {
-              _id: model.object.id,
-              name: model.object.name,
-            },
-            year: payload.year,
-            priceByDay: payload.priceByDay,
-            vehicleType: type.object.id,
-            vehicleFuelType: fuelType.object.id,
-            coinType: payload.coinType,
-            placa: payload.placa,
-          };
-      
-          if (imgs.length > 0) {
-            objToUpdate['$push'] = { images: { $each: imgs } };
-          }
-      
-          const update = await this.model.findByIdAndUpdate(payload._id, objToUpdate);
-      
-          if (imgsToDelete.length > 0) {
-            console.log("PENDIENTE DE VALIDAR LOS IDS");
-            await this.model.findByIdAndUpdate(payload._id, {
-              $pullAll: {
-                images: imgsToDelete,
-              },
-            });
-          }
-      
-          return new ServiceResponse(200, "", "", update);
+            const vehic = await this.model.findById(payload._id);
+
+            if (!vehic) {
+                return new ServiceResponse(400, "Error", "Este vehículo no existe", null);
+            }
+
+            const make = await this.fetchItemById(payload.makeId, this._make);
+            const model = await this.fetchItemById(payload.modelId, this._models);
+            const fuelType = await this.fetchItemById(payload.fuelTypeId, this._fuel);
+            const type = await this.fetchItemById(payload.vehicleTypeId, this._types);
+            const payloadImages = payload.images.map((obj) => obj.FileImage);
+            const [imgs, imgsToDelete] = this.processImages(payloadImages, vehic.images);
+
+            const objToUpdate = {
+                make: {
+                    _id: make.object.id,
+                    name: make.object.name,
+                },
+                model: {
+                    _id: model.object.id,
+                    name: model.object.name,
+                },
+                year: payload.year,
+                priceByDay: payload.priceByDay,
+                vehiclesType: type.object.id,
+                vehiclesFuel: fuelType.object.id,
+                coinType: payload.coinType,
+                placa: payload.placa,
+            };
+
+            if (imgs.length > 0) {
+                objToUpdate['$push'] = { images: { $each: imgs } };
+            }
+
+            const update = await this.model.findByIdAndUpdate(payload._id, objToUpdate);
+
+            if (imgsToDelete.length > 0) {
+                console.log("PENDIENTE DE VALIDAR LOS IDS");
+                await this.model.findByIdAndUpdate(payload._id, {
+                    $pullAll: {
+                        images: imgsToDelete,
+                    },
+                });
+            }
+
+            return new ServiceResponse(200, "", "", update);
         } catch (error) {
-          this._logger.error(`VehiclesRentCars: Error no controlado update ${error}`);
-          return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+            this._logger.error(`VehiclesRentCars: Error no controlado update ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
-      }
-      
-      private async fetchItemById(id: string, service: any): Promise<ServiceResponse> {
+    }
+
+    private async fetchItemById(id: string, service: any): Promise<ServiceResponse> {
         const item = await service.findById(id);
         if (!item || item.statusCode !== 200) {
-          throw new Error(`Error fetching item with id ${id}`);
+            throw new Error(`Error fetching item with id ${id}`);
         }
         return item;
-      }
-      
-      private processImages(newImages: any[], existingImages: any[]): [any[], any[]] {
+    }
+
+    private processImages(newImages: any[], existingImages: any[]): [any[], any[]] {
         const imgs = newImages.filter(item => item.FileName);
         const imgsToDelete = existingImages
-          .filter(item => !newImages.some(newImage => newImage.publicId === item.publicId))
-          .map(item => [item.publicId, item.publicIdThumnail])
-          .flat();
+            .filter(item => !newImages.some(newImage => newImage.publicId === item.publicId))
+            .map(item => [item.publicId, item.publicIdThumnail])
+            .flat();
         return [imgs, imgsToDelete];
-      }
-      
+    }
+
 
 
 

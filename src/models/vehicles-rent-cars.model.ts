@@ -15,8 +15,17 @@ export class VehicleRentCar extends Document {
     name: string;
   };
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Makes', required: true })
-  make: mongoose.Schema.Types.ObjectId;
+  @Prop({
+    type: {
+      _id: { type: mongoose.Schema.Types.ObjectId },
+      name: { type: String, required: true },
+    },
+    required: true,
+  })
+  make: {
+    _id: mongoose.Schema.Types.ObjectId;
+    name: string;
+  };
 
   @Prop({ type: Number, required: true, min: 2000 })
   year: number;
@@ -27,14 +36,14 @@ export class VehicleRentCar extends Document {
   @Prop({ type: Number, min: 0, required: true })
   priceByDay: number;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'VehicleTypes', required: true })
-  vehicleType: mongoose.Schema.Types.ObjectId;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'VehiclesTypes', required: true })
+  vehiclesTypes: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'VehicleFuels', required: true })
-  vehicleFuelType: mongoose.Schema.Types.ObjectId;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'VehiclesFuel', required: true })
+  vehiclesFuel: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'VehicleStatus', required: true })
-  vehicleStatus: mongoose.Schema.Types.ObjectId;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'VehiclesStatus', required: true })
+  vehiclesStatus: mongoose.Schema.Types.ObjectId;
 
   @Prop({ type: String, required: true })
   coinType: string;
@@ -47,18 +56,18 @@ export class VehicleRentCar extends Document {
       publicId: { type: String },
       url: { type: String },
       secureUrl: { type: String },
-      publicIdThumnail: { type: String },
-      urlThumnail: { type: String },
-      secureUrlThumnail: { type: String },
+      publicIdThumbnail: { type: String },
+      urlThumbnail: { type: String },
+      secureUrlThumbnail: { type: String },
     },
   ])
   images: Array<{
     publicId: string;
     url: string;
     secureUrl: string;
-    publicIdThumnail: string;
-    urlThumnail: string;
-    secureUrlThumnail: string;
+    publicIdThumbnail: string;
+    urlThumbnail: string;
+    secureUrlThumbnail: string;
   }>;
 
   @Prop({ type: Date, default: Date.now, required: true })

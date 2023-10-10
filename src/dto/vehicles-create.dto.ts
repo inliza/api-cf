@@ -1,4 +1,4 @@
-import { IsMongoId, IsNumber, IsString, IsArray, Min, MinLength, IsNotEmpty } from 'class-validator';
+import { IsMongoId, IsNumber, IsString, IsArray, Min, MinLength, IsNotEmpty, ArrayMinSize } from 'class-validator';
 
 export class CreateVehicleDto {
   @IsNotEmpty()
@@ -34,6 +34,6 @@ export class CreateVehicleDto {
   placa: string;
 
   @IsArray()
-  @MinLength(1)
-  images: string[];
+  @ArrayMinSize(1)
+  images: any[];
 }
