@@ -315,6 +315,7 @@ export class VehiclesRentCarsService {
           const update = await this.model.findByIdAndUpdate(payload._id, objToUpdate);
       
           if (imgsToDelete.length > 0) {
+            console.log("PENDIENTE DE VALIDAR LOS IDS");
             await this.model.findByIdAndUpdate(payload._id, {
               $pullAll: {
                 images: imgsToDelete,

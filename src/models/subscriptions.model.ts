@@ -18,7 +18,7 @@ export class Subscriptions extends Document {
     @Prop({ required: true })
     subscriberId: string;
 
-    @Prop({ required: true, default: true })
+    @Prop({ required: true, default: false })
     deleted: Boolean
 
     @Prop({ default: Date.now, required: true })

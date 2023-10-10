@@ -6,6 +6,7 @@ import { ServiceResponse } from "src/common/utils/services-response";
 import { CitiesPickUp } from "src/models/cities-pickup.model";
 import { Cities } from "src/models/cities.model";
 import { CompaniesPickups } from "src/models/companies-pickup.model";
+const { ObjectId } = require('mongodb');
 
 @Injectable()
 export class CompaniesPickupsService {
@@ -72,7 +73,7 @@ export class CompaniesPickupsService {
 
                     if (site.marked) {
                         if (!existingPickup) {
-                            const comPickup = new CompaniesPickups({
+                            const comPickup = new this.model({
                                 companyId,
                                 citypickupId: site._id,
                                 cityId: pickup.city,
@@ -114,14 +115,14 @@ export class CompaniesPickupsService {
                     .find({ companyId, citypickupId: { $in: siteIds } })
                     .distinct('citypickupId');
 
-                const isAllMarked = markedSites.length === siteIds.length;
+                const isAllMarked = markedSites.length > 0 && markedSites.length  === siteIds.length;
 
                 citiesPickups.push({
                     city: city._id,
                     name: city.name,
                     sites: sites.map((site) => ({
                         ...site,
-                        marked: markedSites.includes(site._id),
+                        marked: markedSites.find((markedSite) => markedSite.equals(new ObjectId(site._id))) !== undefined,
                     })),
                     all: isAllMarked,
                 });

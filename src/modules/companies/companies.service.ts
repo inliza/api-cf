@@ -195,7 +195,7 @@ export class CompaniesService {
 
     async put(payload: CompanyUpdateDto, id: string): Promise<ServiceResponse> {
         try {
-            const city = await this._cities.findById(payload.city);
+            const city = await this._cities.findById(payload.cityId);
             if (city.statusCode !== 200) {
                 return new ServiceResponse(400, "", city.statusCode === 404 ? "Esta ciudad no existe." : "Ha ocurrido un error", null);
             }
@@ -210,7 +210,7 @@ export class CompaniesService {
                     rnc: payload.rnc,
                     mobileNumber: payload.mobileNumber,
                     phoneNumber: payload.phoneNumber,
-                    city: payload.city,
+                    city: payload.cityId,
                 }
             );
 

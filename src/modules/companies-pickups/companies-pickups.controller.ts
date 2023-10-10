@@ -28,16 +28,17 @@ export class CompaniesPickupsController {
     }
 
     @Post()
+    @UseGuards(AuthCompanyMiddleware)
     async Save(@Req() req, @Res() res) {
-        const result = await this.service.savePickups(req.body, req.claims._id);
+        const result = await this.service.savePickups(req.body, req.claims.companyId);
         return res.status(result.statusCode).send(result);
     }
 
 
-    @Get()
+    @Get('pickups')
     @UseGuards(AuthCompanyMiddleware)
     async getAll(@Req() req, @Res() res) {
-      const result = await this.service.getAllPickups(req.claims._id);
+      const result = await this.service.getAllPickups(req.claims.companyId);
       return res.status(result.statusCode).send(result);
     }
 

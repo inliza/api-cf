@@ -25,6 +25,7 @@ export class BookingsService {
         private readonly _vehicleStatus: VehiclesStatusService
 
     ) { }
+
     async create(payload: CreateBookingDto, clientId: string): Promise<ServiceResponse> {
         try {
             const vehicle = await this.getVehicleProfile(payload.vehicleId);
@@ -78,7 +79,6 @@ export class BookingsService {
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
     }
-
 
     async getByClient(clientId: string): Promise<ServiceResponse> {
         try {

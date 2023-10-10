@@ -14,7 +14,7 @@ export class SubscriptionsPlansService {
 
     async findAll(): Promise<ServiceResponse> {
         try {
-            const list = await this.model.find().exec();
+            const list = await this.model.find({deleted:false}).exec();
             return new ServiceResponse(200, "Ok", "", list);
         } catch (error) {
             this._logger.error(`SubscriptionsPlans: Error no controlado findAll ${error}`);

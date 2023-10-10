@@ -34,7 +34,10 @@ export class SubscriptionsService {
             const sub = await this.model.findOne({
                 companyId: companyId,
                 deleted: false,
-            }).populate({ path: "planId", model: "subscriptionsplans" });
+            }).populate({ path: "planId", model: "SubscriptionsPlans" });
+            if(!sub) {
+                return new ServiceResponse(404, "Without plan", "", sub);
+            }
             return new ServiceResponse(200, "Ok", "", sub);
         } catch (error) {
             this._logger.error(`Subscriptions: Error no controlado getByCompany ${error}`);
@@ -45,7 +48,7 @@ export class SubscriptionsService {
     async create(payload: SubscriptionsCreateDto, companyId: string): Promise<ServiceResponse> {
 
         try {
-            const url = `${process.env.PAYPAL_URL}v1/billing/subscriptions/${payload}`;
+            const url = `${process.env.PAYPAL_URL}v1/billing/subscriptions/${payload.subscriptionId}`;
             const res = await this.http.get(url, null, this.getPaypalHeaders())
             const plan = await this._plans.findById(payload.planId);
             if (plan.statusCode !== 200) {
@@ -78,7 +81,7 @@ export class SubscriptionsService {
             const url = `${process.env.PAYPAL_URL}v1/billing/subscriptions/${sub.object.paypalSubscriptionId}/cancel`
             const res = await this.http.post(url, null, this.getPaypalHeaders())
             console.log(`Respuesta de cancelar subscripcion ${res.data}`)
-            this.model.findByIdAndUpdate(payload.subId, {
+            await this.model.findByIdAndUpdate(payload.subId, {
                 deleted: true,
             });
 
@@ -108,7 +111,7 @@ export class SubscriptionsService {
 
     private getPaypalHeaders(): any {
         const credentials = Buffer.from(
-            process.env.PAYPAL_CLIENT + ":" + process.env.PAYPAL_KEY).toString("base64");
+            process.env.PAYPAL_CLIENT_ID + ":" + process.env.PAYPAL_SECRET).toString("base64");
 
         return {
             headers: {

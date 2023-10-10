@@ -7,10 +7,6 @@ export class CreateVehicleDto {
 
   @IsNotEmpty()
   @IsMongoId()
-  companyId: string;
-
-  @IsNotEmpty()
-  @IsMongoId()
   modelId: string;
 
   @IsNotEmpty()
