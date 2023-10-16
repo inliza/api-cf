@@ -94,6 +94,12 @@ export class AuthService {
                     null);
             }
 
+            const company = await this._companies.findByUserId(user.object.id);
+            if (company.statusCode !== 200) {
+
+                return new ServiceResponse(400, "Error", "No se pudo restablecer su contraseña", null);
+            }
+
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(payload.newPassword, salt);
 
@@ -183,10 +189,54 @@ export class AuthService {
                 clientId: client.object.id,
                 userType: user.object.userType
             })
-            return new ServiceResponse(200, "", "", token);
+            return new ServiceResponse(200, "", `Bienvenido ${client.object.firstName}`, token);
         } catch (error) {
             this._logger.error(`Auth: Error no controlado loginClient ${error}`);
             return new ServiceResponse(500, "Error", "No se pudo completar su inicio de sesión", null);
+
+        }
+
+    }
+
+    async resetPasswordClient(payload: ResetPasswordDto): Promise<ServiceResponse> {
+        try {
+            if (payload.newPassword !== payload.newPasswordRepeat) {
+                return new ServiceResponse(400, "Error", "Las contraseñas no coinciden", null);
+            }
+
+            const check = await this._codes.getOne(payload.code);
+            if (check.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "Código expirado o ya usado", null);
+            }
+
+            const user = await this._users.findById(check.object.user);
+            if (user.statusCode !== 200) {
+                return new ServiceResponse(404,
+                    "Error",
+                    "Usuario no encontrado, favor comuníquese con soporte técnico",
+                    null);
+            }
+
+            const client = await this._clients.findByUserId(user.object.id);
+            if (client.statusCode !== 200) {
+
+                return new ServiceResponse(400, "Error", "No se pudo completar su cambio de contraseña", null);
+            }
+
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(payload.newPassword, salt);
+
+            const result = await this._users.changePassword(user.object.id, hashedPassword);
+            if (result.statusCode === 200) {
+                await this._codes.changeStatus(check.object.id);
+            }
+
+            return result;
+
+        } catch (error) {
+            this._logger.error(`Auth: Error no controlado resetPasswordClient ${error}`);
+            return new ServiceResponse(500, "Error", "No se pudo completar su cambio de clave", null);
 
         }
 

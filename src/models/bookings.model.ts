@@ -11,12 +11,12 @@ export class Bookings {
       _id: mongoose.Schema.Types.ObjectId,
       name: { type: String, required: true },
       image: {
-        publicId: String,
-        url: String,
-        secureUrl: String,
-        publicIdThumnail: String,
-        urlThumnail: String,
-        secureUrlThumnail: String,
+        publicId: { type: String },
+        url: { type: String },
+        secureUrl: { type: String },
+        publicIdThumbnail: { type: String },
+        urlThumbnail: { type: String },
+        secureUrlThumbnail: { type: String },
       },
     },
     required: true,
@@ -28,10 +28,10 @@ export class Bookings {
       publicId: string;
       url: string;
       secureUrl: string;
-      publicIdThumnail: string;
-      urlThumnail: string;
-      secureUrlThumnail: string;
-    };
+      publicIdThumbnail: string;
+      urlThumbnail: string;
+      secureUrlThumbnail: string;
+    },
   };
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
@@ -86,7 +86,7 @@ export class Bookings {
   deliverSite: { 
     _id: mongoose.Schema.Types.ObjectId; name: string };
 
-  @Prop({ type: 'ObjectId', ref: 'bookingstatus' })
+  @Prop({ type: 'ObjectId', ref: 'BookingStatus' })
   bookingStatus: string;
 
   @Prop({ type: Date, default: Date.now, required: true })

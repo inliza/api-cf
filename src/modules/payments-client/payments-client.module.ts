@@ -7,6 +7,7 @@ import { PaymentsChannelsModule } from '../payments-channels/payments-channels.m
 import { PaymentsStatusModule } from '../payments-status/payments-status.module';
 import { PaymentsTypesModule } from '../payments-types/payments-types.module';
 import { HelperModule } from 'src/common/helper/helper.module';
+import { PaymentsClientsController } from './payments-client.controller';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { HelperModule } from 'src/common/helper/helper.module';
         HelperModule
     ],
     providers: [PaymentsClientsService],
+    controllers: [PaymentsClientsController],
     exports: [PaymentsClientsService]
 })
 export class PaymentsClientsModule { }

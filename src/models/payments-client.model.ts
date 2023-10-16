@@ -3,9 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class PaymentsClients extends Document {
-    @Prop({ required: true, minlength: 5, maxlength: 50 })
-    name: string;
-
+    
     @Prop({ type: 'ObjectId', ref: 'Clients', required: true })
     clientId: string;
 

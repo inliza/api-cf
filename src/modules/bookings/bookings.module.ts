@@ -10,6 +10,8 @@ import { ClientsModule } from '../clients/clients.module';
 import { VehiclesRentCarsModule } from '../vehicles-rent-cars/vehicles-rent-cars.module';
 import { VehicleRentCar, VehicleRentCarSchema } from 'src/models/vehicles-rent-cars.model';
 import { VehiclesStatusModule } from '../vehicles-status/vehicles-status.module';
+import { PaymentsClientsModule } from '../payments-client/payments-client.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
     imports: [
@@ -22,7 +24,9 @@ import { VehiclesStatusModule } from '../vehicles-status/vehicles-status.module'
         BookingStatusModule,
         HelperModule,
         ClientsModule,
-        VehiclesStatusModule
+        VehiclesStatusModule,
+        PaymentsClientsModule,
+        NotificationsModule
     ],
     providers: [BookingsService],
     controllers: [BookingsController],

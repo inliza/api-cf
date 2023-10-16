@@ -23,6 +23,13 @@ export class OperationsService {
     return maskedEmail;
   }
 
+  public formatDatToDMY(date: Date) : string {
+    var month = date.getUTCMonth() + 1;
+    var day = date.getUTCDate();
+    var year = date.getUTCFullYear();
+    return day + "/" + month + "/" + year;
+  }
+
 
 
 }

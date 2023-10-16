@@ -10,6 +10,9 @@ import { PaymentsTypesService } from "../payments-types/payments-types.service";
 import { PaymentsChannelsService } from "../payments-channels/payments-channels.service";
 import { v4 as uuidv4 } from 'uuid';
 import { OperationsService } from "src/common/helper/operations.service";
+import { ClientPayCreateOrderDto } from "src/dto/client-pay-create-order.dto";
+import { HttpCallService } from "src/common/helper/http-call.service";
+import { ClientPayCaptureOrderDto } from "src/dto/client-pay-capture-order.dto";
 
 @Injectable()
 export class PaymentsClientsService {
@@ -19,23 +22,25 @@ export class PaymentsClientsService {
         private readonly _types: PaymentsTypesService,
         private readonly _channel: PaymentsChannelsService,
         private readonly _operations: OperationsService,
-        private readonly _logger: LoggerService
+        private readonly _logger: LoggerService,
+        private readonly http: HttpCallService,
+
     ) { }
 
     async payByPaypal(payload: ClientPayByPaypalDto, clientId: string): Promise<ServiceResponse> {
         try {
             const status = await this._status.findByName("Processed");
-            if (!status) {
+            if (status.statusCode !== 200) {
                 return new ServiceResponse(404, "Error", "Error en configuracion. Estados Pagos", null);
             }
 
             const type = await this._types.findByName("Booking Payment");
-            if (!type) {
+            if (type.statusCode !== 200) {
                 return new ServiceResponse(404, "Error", "Error en configuracion. Tipo Pagos", null);
             }
 
             const channel = await this._channel.findByName(payload.channel);
-            if (!channel) {
+            if (channel.statusCode !== 200) {
                 return new ServiceResponse(404, "Error", "Error en configuracion. Tipo Canal", null);
             }
 
@@ -66,6 +71,54 @@ export class PaymentsClientsService {
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
 
         }
+    }
+
+    async createOrder(payload: ClientPayCreateOrderDto): Promise<ServiceResponse> {
+        try {
+            const url = `${process.env.PAYPAL_URL}v2/checkout/orders`;
+            const data = {
+                intent: "CAPTURE",
+                purchase_units: [
+                    {
+                        amount: {
+                            currency_code: payload.coinType,
+                            value: payload.amount,
+                        },
+                    },
+                ],
+            };
+            const res = await this.http.post(url, data, this.getPaypalHeaders())
+            return new ServiceResponse(200, "Ok", "", res.data);
+        } catch (error) {
+            this._logger.error(`PaymentsClientsService: Error no controlado createOrder ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
+
+    async captureOrder(payload: ClientPayCaptureOrderDto): Promise<ServiceResponse> {
+        try {
+            const url = `${process.env.PAYPAL_URL}v2/checkout/orders/${payload.orderId}/capture`;
+            const res = await this.http.post(url, null, this.getPaypalHeaders())
+            return new ServiceResponse(200, "Ok", "", res.data);
+        } catch (error) {
+            this._logger.error(`PaymentsClientsService: Error no controlado captureOrder ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
+
+    private getPaypalHeaders(): any {
+        const credentials = Buffer.from(
+            process.env.PAYPAL_CLIENT_ID + ":" + process.env.PAYPAL_SECRET).toString("base64");
+
+        return {
+            headers: {
+                "Authorization": "Basic " + credentials,
+                "Content-Type": "application/json"
+            },
+        }
+
     }
 
 

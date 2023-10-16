@@ -36,5 +36,11 @@ export class AuthController {
         return res.status(result.statusCode).send(result);
     }
 
+    @Post('clients/reset-password')
+    async ResetPasswordClients(@Body() payload: ResetPasswordDto, @Res() res) {
+        const result = await this.service.resetPasswordClient(payload);
+        return res.status(result.statusCode).send(result);
+    }
+
 
 }

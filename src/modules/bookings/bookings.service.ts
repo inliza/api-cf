@@ -11,6 +11,9 @@ import { CreateBookingDto } from 'src/dto/bookings-create.dto';
 import { ClientsService } from '../clients/clients.service';
 import { VehicleRentCar } from 'src/models/vehicles-rent-cars.model';
 import { VehiclesStatusService } from '../vehicles-status/vehicles-status.service';
+import { PaymentsClientsService } from '../payments-client/payments-client.service';
+import { ClientPayByPaypalDto } from 'src/dto/client-pay-paypal.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class BookingsService {
@@ -22,7 +25,10 @@ export class BookingsService {
         private readonly status: BookingStatusService,
         private readonly _operations: OperationsService,
         private readonly _client: ClientsService,
-        private readonly _vehicleStatus: VehiclesStatusService
+        private readonly _vehicleStatus: VehiclesStatusService,
+        private readonly _payments: PaymentsClientsService,
+        private readonly _notifications: NotificationsService,
+
 
     ) { }
 
@@ -39,7 +45,7 @@ export class BookingsService {
             }
 
             let days = Math.round(
-                (payload.toDate.getTime() - payload.fromDate.getTime()) / (1000 * 60 * 60 * 24)
+                (new Date(payload.toDate).getTime() - new Date(payload.fromDate).getTime()) / (1000 * 60 * 60 * 24)
             );
             days++;
 
@@ -72,10 +78,47 @@ export class BookingsService {
                 bookingStatus: validateStatus.object.id,
             });
             await booking.save();
+            const dataPay: ClientPayByPaypalDto = {
+                vehicleId: vehicle.object.id,
+                companyId: vehicle.object.companyId,
+                bookingId: booking._id.toString(),
+                amount: booking.total,
+                coinType: vehicle.object.coinType,
+                paymentNonce: payload.paymentMethodNonce,
+                channel: payload.channel,
+                orderId: payload.orderId,
+                paymentInfo: payload.paymentInfo
+            }
+            const pay = await this._payments.payByPaypal(dataPay, clientId);
+            if (pay.statusCode !== 200) {
+                console.info(dataPay);
+                await this.deleteById(booking.id, true);
+                return new ServiceResponse(500, "Ha ocurrido un error interno", "Su reserva no ha podido ser procesada", null);
+            } else {
+                const dataEmail = {
+                    email: client.object.user.email,
+                    name: client.object.firstName + " " + client.object.lastName,
+                    vehicle:
+                        vehicle.object.make.name + " " + vehicle.object.model.name + " " + vehicle.object.year,
+                    vehicleImage: vehicle.object.images[0].secureUrl,
+                    fromDate: this._operations.formatDatToDMY(new Date(payload.fromDate)),
+                    toDate: this._operations.formatDatToDMY(new Date(payload.toDate)),
+                    pickupSite: payload.pickupSite.name,
+                    deliverSite: payload.deliverSite.name,
+                    bookingId: booking.id,
+                }
+
+                const sendNotification = await this._notifications.send('mail/client/booking/confirmation', dataEmail);
+                if (sendNotification.statusCode !== 200) {
+                    this._logger.error(`Bookings: ERROR: No se pudo enviar el correo de reserva a ${dataEmail.email}. ${JSON.stringify(dataEmail)}`);
+                }
+
+            }
+
             return new ServiceResponse(200, "Success", "Reserva confirmada", null);
 
         } catch (error) {
-            this._logger.error(`Bookings: Error no controlado getBookedVehiclesByDates ${error}`);
+            this._logger.error(`Bookings: Error no controlado create ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
     }
@@ -86,7 +129,7 @@ export class BookingsService {
                 { clientId: clientId, deleted: false },
                 { deleted: 0 }
             )
-                .populate({ path: "bookingStatus", model: "bookingstatus" })
+                .populate("bookingStatus")
                 .sort({ createdDate: -1 });
             return new ServiceResponse(200, "Ok", "", list);
         } catch (error) {
@@ -179,10 +222,7 @@ export class BookingsService {
 
     async findById(id: string): Promise<ServiceResponse> {
         try {
-            const doc = await this.model.findById(id).populate({
-                path: "bookingStatus",
-                model: "bookingstatus"
-            });
+            const doc = await this.model.findById(id).populate("bookingStatus");
             if (!doc) {
                 return new ServiceResponse(404, "Booking not found", "", null);
             }
@@ -193,7 +233,7 @@ export class BookingsService {
         }
     }
 
-    async deleteById(id: string): Promise<ServiceResponse> {
+    async deleteById(id: string, bySystem?: boolean): Promise<ServiceResponse> {
         try {
 
             const booking = await this.findById(id);
@@ -206,7 +246,7 @@ export class BookingsService {
                 return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
             }
 
-            if (!this._operations.compareMongoDBIds(booking.object.bookingStatus.id, validateStatus.object.id)) {
+            if (!bySystem && !this._operations.compareMongoDBIds(booking.object.bookingStatus, validateStatus.object.id)) {
                 return new ServiceResponse(400, "Info", "Esta reserva no se puede eliminar", null);
             }
 
@@ -253,7 +293,7 @@ export class BookingsService {
             const bookings = await this.model.find(
                 { companyId: companyId, deleted: false },
                 { deleted: 0 }
-            ).populate({ path: "bookingStatus", model: "bookingstatus" });
+            ).populate("bookingStatus");
             return new ServiceResponse(200, "Ok", "", bookings);
 
         } catch (error) {
@@ -356,18 +396,33 @@ export class BookingsService {
                 return new ServiceResponse(400, "Error", "Status are not defined", null);
             }
 
-            const vehicle = await this.model.find({
+            const vehicle = await this.vehicles.findOne({
                 _id: id,
                 deleted: false,
-                vehicleStatus: validateStatus.object.id,
+                vehiclesStatus: validateStatus.object.id,
             })
-                .populate("vehicleFuelType", "name")
-                .populate("vehicleType", "name");
+                .populate("vehiclesFuel")
+                .populate("vehiclesTypes").exec();
             return new ServiceResponse(vehicle ? 200 : 404, "", "", vehicle);
         } catch (error) {
             this._logger.error(`Bookings: Error no controlado getProfile ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
+    }
+
+    public async sendCreateBookingEmail(data: any): Promise<ServiceResponse> {
+        try {
+            const send = await this._notifications.send('mail/client/booking/confirmation', data);
+            if (send.statusCode !== 200) {
+                this._logger.error(`ERROR: No se pudo enviar la solicitud a ${data.email}. ${JSON.stringify(data)}`);
+            }
+            return send;
+        } catch (error) {
+            this._logger.error(`Clients: Error no controlado sendCreateClientEmail ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+
     }
 
 }

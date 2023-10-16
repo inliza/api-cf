@@ -54,8 +54,6 @@ export class ClientsService {
         }
     }
 
-
-
     async create(request: ClientsCreateDto): Promise<ServiceResponse> {
         try {
             const errorMessage = "Ha ocurrido un error creando su usuario, por favor intente mas adelante."

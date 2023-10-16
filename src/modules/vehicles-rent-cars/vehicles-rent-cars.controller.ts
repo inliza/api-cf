@@ -73,7 +73,7 @@ export class VehiclesRentCarsController {
         return res.status(result.statusCode).send(result);
     }
 
-    @Delete()
+    @Delete(':id')
     @UseGuards(AuthCompanyMiddleware)
     async delete(@Param('id') id: string, @Res() res) {
         if (!Types.ObjectId.isValid(id)) {

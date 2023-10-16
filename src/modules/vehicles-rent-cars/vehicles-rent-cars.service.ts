@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 import { LoggerService } from "src/common/logger/logger.service";
 import { ServiceResponse } from "src/common/utils/services-response";
 import { VehicleRentCar } from "src/models/vehicles-rent-cars.model";
@@ -14,7 +14,6 @@ import { MakesService } from "../makes/makes.service";
 import { ModelsService } from "../models/models.service";
 import { VehiclesFuelService } from "../vehicles-fuel/vehicles-fuel.service";
 import { VehiclesTypesService } from "../vehicles-types/vehicles-types.service";
-import { HttpCallService } from "src/common/helper/http-call.service";
 import { VehiclesImagesService } from "../vehicle-images/vehicle-images.service";
 import { UpdateVehicleDto } from "src/dto/vehicles-update.dto";
 
@@ -43,7 +42,8 @@ export class VehiclesRentCarsService {
             )
                 .populate("make", "name -_id")
                 .populate("vehiclesFuel", "name -_id")
-                .populate("vehiclesTypes", "name -_id");
+                .populate("vehiclesTypes", "name -_id")
+                .populate("vehiclesStatus", "name -_id");
 
             return new ServiceResponse(200, "Ok", "", vehicles);
         } catch (error) {
@@ -64,8 +64,8 @@ export class VehiclesRentCarsService {
                 deleted: false,
                 vehiclesStatus: validateStatus.object.id,
             })
-                .populate("vehiclesFuel", "name -_id")
-                .populate("vehiclesTypes", "name -_id");
+                .populate("vehiclesFuel")
+                .populate("vehiclesTypes");
             return new ServiceResponse(vehicle ? 200 : 404, "", "", vehicle);
         } catch (error) {
             this._logger.error(`VehiclesRentCars: Error no controlado getProfile ${error}`);
@@ -126,44 +126,44 @@ export class VehiclesRentCarsService {
 
             const vehicles = await this.model.aggregate([
                 {
-                  $match: {
-                    deleted: false,
-                    _id: { $nin: notAvailableList.object },
-                    vehiclesStatus: validateStatus.object._id,
-                  },
+                    $match: {
+                        deleted: false,
+                        _id: { $nin: notAvailableList.object },
+                        vehiclesStatus: validateStatus.object._id,
+                    },
                 },
                 { $sample: { size: 8 } },
                 {
-                  $lookup: {
-                    from: 'vehiclestypes',
-                    localField: 'vehiclesTypes',
-                    foreignField: '_id',
-                    as: 'vehiclesTypes',
-                  },
+                    $lookup: {
+                        from: 'vehiclestypes',
+                        localField: 'vehiclesTypes',
+                        foreignField: '_id',
+                        as: 'vehiclesTypes',
+                    },
                 },
                 {
-                  $lookup: {
-                    from: 'vehiclesfuels',
-                    localField: 'vehiclesFuel',
-                    foreignField: '_id',
-                    as: 'vehiclesFuel',
-                  },
+                    $lookup: {
+                        from: 'vehiclesfuels',
+                        localField: 'vehiclesFuel',
+                        foreignField: '_id',
+                        as: 'vehiclesFuel',
+                    },
                 },
                 {
                     $group: {
-                      _id: '$_id',
-                      result: { $push: '$$ROOT' },
+                        _id: '$_id',
+                        result: { $push: '$$ROOT' },
                     },
-                  },
-                  {
+                },
+                {
                     $unwind: '$result',
-                  },
-                  {
+                },
+                {
                     $replaceRoot: {
-                      newRoot: '$result',
+                        newRoot: '$result',
                     },
-                  },
-              ]);              
+                },
+            ]);
 
             return new ServiceResponse(200, "Ok", "", vehicles);
         } catch (error) {
@@ -187,7 +187,7 @@ export class VehiclesRentCarsService {
 
     async changeStatus(payload: VehiclesChangeStatusDto): Promise<ServiceResponse> {
         try {
-            const validateStatus = await this._status.findById(payload.vehicleId);
+            const validateStatus = await this._status.findById(payload.statusId);
             if (validateStatus.statusCode !== 200) {
                 return new ServiceResponse(400, "Error", "Este Status no existe", null);
             }
@@ -282,7 +282,7 @@ export class VehiclesRentCarsService {
 
     async update(payload: UpdateVehicleDto): Promise<ServiceResponse> {
         try {
-            const vehic = await this.model.findById(payload._id);
+            const vehic = await this.model.findById(payload._id).exec();
 
             if (!vehic) {
                 return new ServiceResponse(400, "Error", "Este vehículo no existe", null);
@@ -292,8 +292,13 @@ export class VehiclesRentCarsService {
             const model = await this.fetchItemById(payload.modelId, this._models);
             const fuelType = await this.fetchItemById(payload.fuelTypeId, this._fuel);
             const type = await this.fetchItemById(payload.vehicleTypeId, this._types);
-            const payloadImages = payload.images.map((obj) => obj.FileImage);
-            const [imgs, imgsToDelete] = this.processImages(payloadImages, vehic.images);
+            const [imgs, imgsToDelete, imgsToDeleteIds] = this.processImages(payload.images, vehic.images);
+
+            const images = await this._images.uploadImages(imgs.map(x => x.FileImage));
+
+            if (images.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "Ha ocurrido un error guardando el vehículo.", payload);
+            }
 
             const objToUpdate = {
                 make: {
@@ -306,25 +311,30 @@ export class VehiclesRentCarsService {
                 },
                 year: payload.year,
                 priceByDay: payload.priceByDay,
-                vehiclesType: type.object.id,
+                vehiclesTypes: type.object.id,
                 vehiclesFuel: fuelType.object.id,
                 coinType: payload.coinType,
                 placa: payload.placa,
             };
 
             if (imgs.length > 0) {
-                objToUpdate['$push'] = { images: { $each: imgs } };
+                objToUpdate['$push'] = { images: { $each: images.object } };
             }
 
             const update = await this.model.findByIdAndUpdate(payload._id, objToUpdate);
 
             if (imgsToDelete.length > 0) {
-                console.log("PENDIENTE DE VALIDAR LOS IDS");
-                await this.model.findByIdAndUpdate(payload._id, {
-                    $pullAll: {
-                        images: imgsToDelete,
-                    },
-                });
+                const payloadId = new mongoose.Types.ObjectId(payload._id);
+                const deleteResult = await this._images.deleteImages(imgsToDelete);
+                if (deleteResult.statusCode === 200) {
+                    for (const imgId of imgsToDeleteIds) {
+                        await this.model.findByIdAndUpdate(payloadId, {
+                            $pull: {
+                                images: { _id: new mongoose.Types.ObjectId(imgId) },
+                            },
+                        });
+                    }
+                }
             }
 
             return new ServiceResponse(200, "", "", update);
@@ -342,13 +352,16 @@ export class VehiclesRentCarsService {
         return item;
     }
 
-    private processImages(newImages: any[], existingImages: any[]): [any[], any[]] {
-        const imgs = newImages.filter(item => item.FileName);
+    private processImages(newImages: any[], existingImages: any[]): [any[], any[], any[]] {
+        const imgs = newImages.filter(item => item && item.FileName);
         const imgsToDelete = existingImages
-            .filter(item => !newImages.some(newImage => newImage.publicId === item.publicId))
-            .map(item => [item.publicId, item.publicIdThumnail])
+            .filter(item => item && !newImages.some(newImage => newImage && newImage.publicId === item.publicId))
+            .map(item => [item.publicId, item.publicIdThumbnail])
             .flat();
-        return [imgs, imgsToDelete];
+        const imgsToDeleteIds = existingImages
+            .filter(item => item && !newImages.some(newImage => newImage && newImage.publicId === item.publicId))
+            .map(item => item.id);
+        return [imgs, imgsToDelete, imgsToDeleteIds];
     }
 
 

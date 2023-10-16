@@ -81,6 +81,10 @@ export class BookingsController {
         return res.status(result.statusCode).send(result);
     }
 
-    
+    @Post('/notific')
+    async sendnotification(@Req() req, @Res() res) {
+        const result = await this.service.sendCreateBookingEmail(req.body);
+        return res.status(result.statusCode).send(result);
+    }
 
 }
