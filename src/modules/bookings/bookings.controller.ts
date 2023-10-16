@@ -6,11 +6,11 @@ import { Types } from "mongoose";
 import { ServiceResponse } from "src/common/utils/services-response";
 import { AuthCompanyMiddleware } from "src/common/middleware/auth-company.middleware";
 import { AuthMiddleware } from "src/common/middleware/auth.middleware";
+import { BookingsIdDto } from "src/dto/bookings-id.dto";
 
 @Controller('api/bookings')
 export class BookingsController {
     constructor(private service: BookingsService) {}
-
 
     @Post()
     @UseGuards(AuthClientMiddleware)
@@ -39,8 +39,8 @@ export class BookingsController {
 
     @Post('/cancel-booking/byClient')
     @UseGuards(AuthClientMiddleware)
-    async cancelByClient(@Req() req, @Body() payload: CreateBookingDto, @Res() res) {
-        const result = await this.service.create(payload, req.claims.clientId);
+    async cancelByClient(@Body() payload: BookingsIdDto, @Res() res) {
+        const result = await this.service.cancelByClient(payload);
         return res.status(result.statusCode).send(result);
     }
 
@@ -78,12 +78,6 @@ export class BookingsController {
             return res.status(400).send(new ServiceResponse(400, "Error", "Invalid booking id", null));
         }
         const result = await this.service.findById(id);
-        return res.status(result.statusCode).send(result);
-    }
-
-    @Post('/notific')
-    async sendnotification(@Req() req, @Res() res) {
-        const result = await this.service.sendCreateBookingEmail(req.body);
         return res.status(result.statusCode).send(result);
     }
 

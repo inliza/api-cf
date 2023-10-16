@@ -13,6 +13,7 @@ import { OperationsService } from "src/common/helper/operations.service";
 import { ClientPayCreateOrderDto } from "src/dto/client-pay-create-order.dto";
 import { HttpCallService } from "src/common/helper/http-call.service";
 import { ClientPayCaptureOrderDto } from "src/dto/client-pay-capture-order.dto";
+import { BookingsIdDto } from "src/dto/bookings-id.dto";
 
 @Injectable()
 export class PaymentsClientsService {
@@ -107,6 +108,51 @@ export class PaymentsClientsService {
 
         }
     }
+
+    async refundPayment(bookingId: string): Promise<ServiceResponse> {
+        try {
+            const payment = await this.model.findOne({
+                bookingId: bookingId
+            });
+            const amountToRefund = (payment.amount * 0.5).toString();
+
+            const status = await this._status.findByName("Refunded by client");
+            if (status.statusCode !== 200) {
+                return new ServiceResponse(404, "Error", "Error en configuracion. Estados Pagos", null);
+            }
+
+            const url = `${process.env.PAYPAL_URL}v2/payments/captures/${payment.paymentNonce}/refund`;
+            const data = { value: amountToRefund, currency_code: "USD" }
+            const res = await this.http.post(url, data, this.getPaypalHeaders());
+            await this.model.findByIdAndUpdate(
+                payment._id,
+                {
+                    paymentStatus: status.object._id,
+                });
+            this._logger.info(`Pago reembolsado booking ${bookingId} client ${payment.clientId} `)
+            return new ServiceResponse(200, "Ok", "", res.data);
+        } catch (error) {
+            this._logger.error(`PaymentsClientsService: Error no controlado captureOrder ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
+
+    async getByClient(clientId: string): Promise<ServiceResponse> {
+        try {
+            const payments = await this.model.find({
+                clientId: clientId
+              })
+                .select("bookingId coinType paymentInfo createdDate amount")
+                .sort({ createdDate: -1 });
+            return new ServiceResponse(200, "Ok", "", payments);
+        } catch (error) {
+            this._logger.error(`PaymentsClientsService: Error no controlado createOrder ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+
+        }
+    }
+
 
     private getPaypalHeaders(): any {
         const credentials = Buffer.from(

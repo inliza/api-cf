@@ -14,6 +14,7 @@ import { VehiclesStatusService } from '../vehicles-status/vehicles-status.servic
 import { PaymentsClientsService } from '../payments-client/payments-client.service';
 import { ClientPayByPaypalDto } from 'src/dto/client-pay-paypal.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { BookingsIdDto } from 'src/dto/bookings-id.dto';
 
 @Injectable()
 export class BookingsService {
@@ -389,6 +390,51 @@ export class BookingsService {
         }
     }
 
+    async cancelByClient(payload: BookingsIdDto): Promise<ServiceResponse> {
+        try {
+
+            const booking = await this.findById(payload.bookingId);
+            if (booking.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+
+            const cancelledStatus = await this.status.findByName("Cancelled");
+            if (cancelledStatus.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+            const confirmedStatus = await this.status.findByName("Confirmed");
+            if (confirmedStatus.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+
+            const cancelledProgress = await this.status.findByName("Cancelation Process");
+            if (cancelledProgress.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+
+            if (!this._operations.compareMongoDBIds(booking.object.bookingStatus, confirmedStatus.object.id)) {
+                return new ServiceResponse(400, "Info", "Esta reserva no se puede cancelar", null);
+            }
+
+            const refund = await this._payments.refundPayment(booking.object.id);
+
+            if (refund.statusCode !== 200) {
+                return new ServiceResponse(400, "Información", "Su reserva no pudo ser cancelada", null);
+            }
+
+            await this.model.findByIdAndUpdate(payload.bookingId, {
+                bookingStatus: cancelledStatus.object.id,
+            });
+
+            return new ServiceResponse(200, "Ok", "Reserva cancelada y pago reembolsado", null);
+
+        } catch (error) {
+            this._logger.error(`Bookings: Error no controlado cancelByClient ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+
+    }
+
     private async getVehicleProfile(id: string): Promise<ServiceResponse> {
         try {
             const validateStatus = await this._vehicleStatus.findByName("Disponible");
@@ -408,21 +454,6 @@ export class BookingsService {
             this._logger.error(`Bookings: Error no controlado getProfile ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
-    }
-
-    public async sendCreateBookingEmail(data: any): Promise<ServiceResponse> {
-        try {
-            const send = await this._notifications.send('mail/client/booking/confirmation', data);
-            if (send.statusCode !== 200) {
-                this._logger.error(`ERROR: No se pudo enviar la solicitud a ${data.email}. ${JSON.stringify(data)}`);
-            }
-            return send;
-        } catch (error) {
-            this._logger.error(`Clients: Error no controlado sendCreateClientEmail ${error}`);
-            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
-
-        }
-
     }
 
 }
