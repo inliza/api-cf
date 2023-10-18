@@ -24,7 +24,7 @@ export class CompanyCreateDto {
 
   @IsNotEmpty()
   @IsMongoId()
-  city: string;
+  cityId: string;
 
 
   @IsNotEmpty()

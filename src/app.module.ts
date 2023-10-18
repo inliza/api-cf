@@ -32,6 +32,7 @@ import { PaymentsStatusModule } from './modules/payments-status/payments-status.
 import { PaymentsTypesModule } from './modules/payments-types/payments-types.module';
 import { PaymentsChannelsModule } from './modules/payments-channels/payments-channels.module';
 import { VehicleImagesModule } from './modules/vehicle-images/vehicle-images.module';
+import { PaymentsCompaniesModule } from './modules/payments-companies/payments-companies.module';
 
 @Module({
   imports: [
@@ -68,7 +69,8 @@ import { VehicleImagesModule } from './modules/vehicle-images/vehicle-images.mod
     PaymentsStatusModule,
     PaymentsTypesModule,
     PaymentsChannelsModule,
-    VehicleImagesModule
+    VehicleImagesModule,
+    PaymentsCompaniesModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -13,7 +13,6 @@ import { OperationsService } from "src/common/helper/operations.service";
 import { ClientPayCreateOrderDto } from "src/dto/client-pay-create-order.dto";
 import { HttpCallService } from "src/common/helper/http-call.service";
 import { ClientPayCaptureOrderDto } from "src/dto/client-pay-capture-order.dto";
-import { BookingsIdDto } from "src/dto/bookings-id.dto";
 
 @Injectable()
 export class PaymentsClientsService {

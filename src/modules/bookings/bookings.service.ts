@@ -15,6 +15,7 @@ import { PaymentsClientsService } from '../payments-client/payments-client.servi
 import { ClientPayByPaypalDto } from 'src/dto/client-pay-paypal.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookingsIdDto } from 'src/dto/bookings-id.dto';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 
 @Injectable()
 export class BookingsService {
@@ -29,8 +30,7 @@ export class BookingsService {
         private readonly _vehicleStatus: VehiclesStatusService,
         private readonly _payments: PaymentsClientsService,
         private readonly _notifications: NotificationsService,
-
-
+        private readonly _subscriptions: SubscriptionsService
     ) { }
 
     async create(payload: CreateBookingDto, clientId: string): Promise<ServiceResponse> {
@@ -435,6 +435,89 @@ export class BookingsService {
 
     }
 
+    async bookingsToPay(): Promise<ServiceResponse> {
+        try {
+            const date = new Date();
+
+            const todayStart = new Date(date);
+            todayStart.setHours(0, 0, 0, 0);
+
+            // Crear una fecha para el comienzo del día anterior (medianoche)
+            const yesterdayStart = new Date(date);
+            yesterdayStart.setDate(date.getDate() - 1);
+            yesterdayStart.setHours(0, 0, 0, 0);
+
+            const confirmedStatus = await this.status.findByName("Confirmed");
+            if (confirmedStatus.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+            const cancelledStatus = await this.status.findByName("Cancelled");
+            if (cancelledStatus.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+
+            const cancelledProgress = await this.status.findByName("Cancelation Process");
+            if (cancelledProgress.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+
+            const bookings = await this.model.find({
+                deleted: false,
+                fromDate: {
+                    $gte: yesterdayStart,
+                    $lt: todayStart,
+                }
+            })
+                .select("-vehicle -pickupSite -deliverSite");
+
+            if (bookings.length === 0) {
+                return new ServiceResponse(404, "Info", "No hay data para procesar", null);
+            }
+
+            const companies = bookings.reduce((uniqueCompanies, booking) => {
+                if (!uniqueCompanies.includes(booking.companyId)) {
+                    uniqueCompanies.push(booking.companyId);
+                }
+                return uniqueCompanies;
+            }, []);
+
+            const subscriptions = await this._subscriptions.getSubsByCompaniesIds(companies);
+            if (subscriptions.statusCode !== 200) {
+                return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
+            }
+
+            const dataToSend = [];
+
+            for (const b of bookings) {
+                const result = subscriptions.object.find((d) =>
+                    d.companyId.equals(b.companyId)
+                );
+                if (result) {
+                    if (!this._operations.compareMongoDBIds(b.bookingStatus, cancelledProgress.object.id)) {
+                        const ifCancelled = this._operations.compareMongoDBIds(b.bookingStatus, cancelledStatus.object.id);
+                        let amount = ifCancelled ? b.subTotal * 0.5 * 0.4 : b.rcTotal;
+                        amount = parseInt((Math.round(amount * 100) / 100).toFixed(2));
+                        const obj = {
+                            companyId: b.companyId,
+                            bookingId: b._id,
+                            amount: amount,
+                            subscriberId: result.subscriberId,
+                            description: ifCancelled
+                                ? "Pago por cancelación de reserva"
+                                : "Pago de reserva",
+                        };
+                        dataToSend.push(obj);
+                    }
+                }
+            }
+
+            return new ServiceResponse(200, "Success", "", dataToSend);
+        } catch (error) {
+            this._logger.error(`Bookings: Error no controlado bookingToProgress ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
+
     private async getVehicleProfile(id: string): Promise<ServiceResponse> {
         try {
             const validateStatus = await this._vehicleStatus.findByName("Disponible");
@@ -454,6 +537,11 @@ export class BookingsService {
             this._logger.error(`Bookings: Error no controlado getProfile ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
+    }
+
+    public async sendNotification(payload: any) {
+        const sendNotification = await this._notifications.send('mail/client/booking/confirmation', payload);
+        return sendNotification;
     }
 
 }

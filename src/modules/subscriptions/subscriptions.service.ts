@@ -35,7 +35,7 @@ export class SubscriptionsService {
                 companyId: companyId,
                 deleted: false,
             }).populate({ path: "planId", model: "SubscriptionsPlans" });
-            if(!sub) {
+            if (!sub) {
                 return new ServiceResponse(404, "Without plan", "", sub);
             }
             return new ServiceResponse(200, "Ok", "", sub);
@@ -46,7 +46,6 @@ export class SubscriptionsService {
     }
 
     async create(payload: SubscriptionsCreateDto, companyId: string): Promise<ServiceResponse> {
-
         try {
             const url = `${process.env.PAYPAL_URL}v1/billing/subscriptions/${payload.subscriptionId}`;
             const res = await this.http.get(url, null, this.getPaypalHeaders())
@@ -94,7 +93,7 @@ export class SubscriptionsService {
 
     }
 
-    async findById(id: string) {
+    async findById(id: string): Promise<ServiceResponse> {
         try {
             const doc = await this.model.findById(id);
             if (!doc) {
@@ -102,10 +101,23 @@ export class SubscriptionsService {
             }
             return new ServiceResponse(200, "Ok", "", doc);
         } catch (error) {
-
             this._logger.error(`Subscriptions: Error no controlado findById ${error}`);
             return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
+        }
+    }
 
+    async getSubsByCompaniesIds(companies: any[]): Promise<ServiceResponse> {
+        try {
+            const res = await this.model.find({
+                companyId: { $in: companies },
+                deleted: false
+            }).exec();
+
+            return new ServiceResponse(200, "", "", res);
+        } catch (error) {
+
+            this._logger.error(`Subscriptions: Error no controlado getSubsByCompaniesIds ${error}`);
+            return new ServiceResponse(500, "Error", "Ha ocurrido un error inesperado", error);
         }
     }
 

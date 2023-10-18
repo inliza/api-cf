@@ -38,7 +38,7 @@ export class CompaniesService {
                 return new ServiceResponse(400, "", user.statusCode === 200 ? "Este correo ya está registrado." : errorMessage, null);
             }
 
-            const city = await this._cities.findById(request.city);
+            const city = await this._cities.findById(request.cityId);
             if (city.statusCode !== 200) {
                 return new ServiceResponse(400, "", city.statusCode === 404 ? "Esta ciudad no existe." : errorMessage, null);
             }

@@ -241,4 +241,37 @@ export class AuthService {
         }
 
     }
+
+    async changePasswordClient(payload: ChangePasswordDto, userId: string): Promise<ServiceResponse> {
+        try {
+            if (payload.newPassword !== payload.newPasswordRepeat) {
+                return new ServiceResponse(400, "Error", "Las contraseñas no coinciden", null);
+            }
+
+            const user = await this._users.findById(userId);
+            if (user.statusCode !== 200) {
+                return new ServiceResponse(404,
+                    "Error",
+                    "Usuario no encontrado, favor comuníquese con soporte técnico",
+                    null);
+            }
+
+            const validPassword = await bcrypt.compare(payload.currentPassword, user.object.password);
+            if (!validPassword) {
+                return new ServiceResponse(400, "Error", "Contraseña actual incorrecta", null);
+            }
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(payload.newPassword, salt);
+
+            return this._users.changePassword(user.object.id, hashedPassword);
+
+        } catch (error) {
+            this._logger.error(`Auth: Error no controlado changePasswordClient ${error}`);
+            return new ServiceResponse(500, "Error", "No se pudo completar su cambio de clave", null);
+
+        }
+
+    }
+
 }

@@ -113,7 +113,7 @@ export class ClientsService {
     private async sendCreateClientEmail(data: any): Promise<ServiceResponse> {
         try {
             const payload = {
-                name: data.firstName,
+                name: data.name,
                 verificationCode: data.code,
                 email: data.email,
             }

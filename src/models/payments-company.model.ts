@@ -2,7 +2,7 @@ import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
-export class PaymentsToCompany extends Document {
+export class PaymentsCompany extends Document {
 
     @Prop({ type: 'ObjectId', ref: 'Companies', required: true })
     companyId: string;
@@ -41,4 +41,4 @@ export class PaymentsToCompany extends Document {
     deleted: boolean;
 }
 
-export const PaymentsCompanySchema = SchemaFactory.createForClass(PaymentsToCompany);
+export const PaymentsCompanySchema = SchemaFactory.createForClass(PaymentsCompany);

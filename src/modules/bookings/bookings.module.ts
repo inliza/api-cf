@@ -12,6 +12,7 @@ import { VehicleRentCar, VehicleRentCarSchema } from 'src/models/vehicles-rent-c
 import { VehiclesStatusModule } from '../vehicles-status/vehicles-status.module';
 import { PaymentsClientsModule } from '../payments-client/payments-client.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
     imports: [
@@ -26,7 +27,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
         ClientsModule,
         VehiclesStatusModule,
         PaymentsClientsModule,
-        NotificationsModule
+        NotificationsModule,
+        SubscriptionsModule
     ],
     providers: [BookingsService],
     controllers: [BookingsController],

@@ -81,4 +81,18 @@ export class BookingsController {
         return res.status(result.statusCode).send(result);
     }
 
+    @Get('bookings-to-pay')
+    // @UseGuards(AuthMiddleware)
+    async toPay(@Res() res) {
+        const result = await this.service.bookingsToPay();
+        return res.status(result.statusCode).send(result);
+    }
+
+    @Post('/notific')
+    @UseGuards(AuthClientMiddleware)
+    async send(@Req() req, @Res() res) {
+        const result = await this.service.sendNotification(req.body);
+        return res.status(result.statusCode).send(result);
+    }
+
 }

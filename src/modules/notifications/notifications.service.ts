@@ -21,7 +21,7 @@ export class NotificationsService {
             this._logger.info(`Notifications: Correo enviado correctamente ${endpoint}`);
             return new ServiceResponse(200, "Ok", "Notification send", res.data);
         } catch (error) {
-            this._logger.error(`Notifications: Error en envio de notificacion ${endpoint}`);
+            this._logger.error(`Notifications: Error en envio de notificacion ${endpoint} error: ${error}`);
             return new ServiceResponse(400, "Ok", error.message, error);
         }
     }
