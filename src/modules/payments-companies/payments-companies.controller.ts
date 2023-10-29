@@ -16,7 +16,7 @@ export class PaymentsCompaniesController {
     }
 
     @Post('pay')
-    // @UseGuards(AuthMiddleware)
+    @UseGuards(AuthMiddleware)
     async pay(@Body() payload: CompaniespayDto, @Res() res) {
         const result = await this.service.proccessPayment(payload);
         return res.status(result.statusCode).send(result);

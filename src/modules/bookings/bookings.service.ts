@@ -141,6 +141,7 @@ export class BookingsService {
 
     async getReservedDatesByVehicle(vehicleId: string): Promise<ServiceResponse> {
         try {
+            debugger
             const validateStatus = await this.status.findByName("Confirmed");
             if (validateStatus.statusCode !== 200) {
                 return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);
@@ -167,15 +168,20 @@ export class BookingsService {
             let arr = [];
             if (bookings.length > 0) {
                 for (let book of bookings) {
-                    for (
-                        var d = book.fromDate;
-                        d <= book.toDate;
-                        d.setDate(d.getDate() + 1)
-                    ) {
-                        arr.push(new Date(d));
+                    let currentDate = new Date(book.fromDate);
+
+                    while (currentDate <= new Date(book.toDate)) {
+                        const year = currentDate.getFullYear();
+                        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                        const day = currentDate.getDate().toString().padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day}`;
+
+                        arr.push(formattedDate);
+                        currentDate.setDate(currentDate.getDate() + 1);
                     }
                 }
             }
+
             return new ServiceResponse(200, "Ok", "", arr);
         } catch (error) {
             this._logger.error(`Bookings: Error no controlado getReservedDatesByVehicle ${error}`);

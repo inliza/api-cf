@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { VehiclesRentCarsService } from "./vehicles-rent-cars.service";
 import { AuthCompanyMiddleware } from "src/common/middleware/auth-company.middleware";
 import { VehiclesAvailablesDto } from "src/dto/vehicles-available.dto";
@@ -30,7 +30,7 @@ export class VehiclesRentCarsController {
 
 
     @Get('available')
-    async getAvailable(@Body() payload: VehiclesAvailablesDto, @Res() res) {
+    async getAvailable(@Query() payload: VehiclesAvailablesDto, @Res() res) {
         const result = await this.service.getAvailable(payload);
         return res.status(result.statusCode).send(result);
     }

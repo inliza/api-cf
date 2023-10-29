@@ -54,7 +54,7 @@ export class PaymentsCompaniesService {
                 return paymentStatus;
             }
 
-            const url = process.env.PAYPAL_URL + "payments/payouts";
+            const url = process.env.PAYPAL_URL + "v1/payments/payouts";
             const date = new Date();
             const guid = uuidv4();
             const data = {

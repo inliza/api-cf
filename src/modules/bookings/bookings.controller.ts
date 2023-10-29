@@ -82,7 +82,7 @@ export class BookingsController {
     }
 
     @Get('bookings-to-pay')
-    // @UseGuards(AuthMiddleware)
+    @UseGuards(AuthMiddleware)
     async toPay(@Res() res) {
         const result = await this.service.bookingsToPay();
         return res.status(result.statusCode).send(result);
@@ -92,6 +92,20 @@ export class BookingsController {
     @UseGuards(AuthClientMiddleware)
     async send(@Req() req, @Res() res) {
         const result = await this.service.sendNotification(req.body);
+        return res.status(result.statusCode).send(result);
+    }
+
+    @Post('bookings-to-progress')
+    @UseGuards(AuthMiddleware)
+    async toProgress(@Res() res) {
+        const result = await this.service.bookingToProgress();
+        return res.status(result.statusCode).send(result);
+    }
+
+    @Post('bookings-to-completed')
+    @UseGuards(AuthMiddleware)
+    async toComplete(@Res() res) {
+        const result = await this.service.bookingsToComplete();
         return res.status(result.statusCode).send(result);
     }
 
