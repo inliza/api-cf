@@ -141,7 +141,7 @@ export class BookingsService {
 
     async getReservedDatesByVehicle(vehicleId: string): Promise<ServiceResponse> {
         try {
-            debugger
+            
             const validateStatus = await this.status.findByName("Confirmed");
             if (validateStatus.statusCode !== 200) {
                 return new ServiceResponse(400, "Error", "No se pudo completar la solicitud", null);

@@ -12,7 +12,7 @@ export class AuthCompanyMiddleware implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     const forbidden = new ForbiddenException('You dont have access to access this resource');
-    
+
     if (!token) {
       throw new UnauthorizedException('Without authorization');
     }
