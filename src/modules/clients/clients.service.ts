@@ -44,7 +44,7 @@ export class ClientsService {
             const comp = await this.model.findOne({ user: userId }).populate('userStatus')
                 .exec();
             if (!comp) {
-                this._logger.error(`Clients: No se han encontrado companies con el userId especificado ${userId}`);
+                this._logger.error(`Clients: No se han encontrado clientes con el userId especificado ${userId}`);
                 return new ServiceResponse(404, "Client not found", "", null);
             }
             return new ServiceResponse(200, "Ok", "", comp);
@@ -58,13 +58,20 @@ export class ClientsService {
         try {
             const errorMessage = "Ha ocurrido un error creando su usuario, por favor intente mas adelante."
             const user = await this._users.findByEmail(request.email);
-            if (user.statusCode !== 404) {
-                return new ServiceResponse(400, "", user.statusCode === 200 ? "Este correo ya está registrado." : errorMessage, null);
-            }
 
             const userStatus = await this._userStatus.findByName('Pending');
             if (userStatus.statusCode !== 200) {
                 return new ServiceResponse(400, "", userStatus.statusCode === 404 ? "Error en configuracion. userStatus" : errorMessage, null);
+            }
+
+            if (user.statusCode !== 404) {
+                const client = await this.findByUserId(user.object.id);
+                if (client.object?.userStatus?.name === "Pending") {
+                    return new ServiceResponse(412, "Error", "Su cuenta aún no ha sido verificada. Por favor revise su correo y valide su usuario."
+                        , null);
+                } else {
+                    return new ServiceResponse(409, "", user.statusCode === 200 ? "Este correo ya está registrado." : errorMessage, null);
+                }
             }
 
             const userType = await this._usersTypes.findByName('Client');
@@ -133,20 +140,20 @@ export class ClientsService {
 
     async put(payload: ClientsUpdateDto, id: string): Promise<ServiceResponse> {
         try {
-            if(payload.gender){
+            if (payload.gender) {
                 const gender = await this._gender.findById(payload.gender);
                 if (gender.statusCode !== 200) {
                     return new ServiceResponse(400, "", gender.statusCode === 404 ? "Este sexo no existe." : "Ha ocurrido un error", null);
                 }
             }
 
-            if(payload.documentType){
+            if (payload.documentType) {
                 const doc = await this._documentType.findById(payload.documentType);
                 if (doc.statusCode !== 200) {
                     return new ServiceResponse(400, "", doc.statusCode === 404 ? "Este tipo de documento no existe." : "Ha ocurrido un error", null);
                 }
             }
-           
+
 
             const client = await this.model.findByIdAndUpdate(
                 id,
@@ -248,7 +255,7 @@ export class ClientsService {
             const c = await this.model.findById(id).populate(
                 "user",
                 "email -_id"
-              );;
+            );;
             if (!c) {
                 this._logger.error(`Clients: No se han encontrado el cliente con el id especificado ${id}`);
                 return new ServiceResponse(404, "Client not found", "", null);
@@ -266,10 +273,8 @@ export class ClientsService {
                 createdDate: 0,
                 deleted: 0,
                 userStatus: 0,
-              })
-                .populate("user", "email -_id")
-                .populate("documentType", "name _id")
-                .populate("gender", "name _id");
+            })
+                .populate("user", "email -_id");
             if (!c) {
                 this._logger.error(`Clients: No se han encontrado el cliente con el id especificado ${id}`);
                 return new ServiceResponse(404, "Client not found", "", null);

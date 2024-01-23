@@ -31,6 +31,7 @@ export class PaymentsClientsService {
         try {
             const status = await this._status.findByName("Processed");
             if (status.statusCode !== 200) {
+                
                 return new ServiceResponse(404, "Error", "Error en configuracion. Estados Pagos", null);
             }
 

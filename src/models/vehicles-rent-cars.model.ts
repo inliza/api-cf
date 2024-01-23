@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 
 @Schema()
-export class VehicleRentCar extends Document {
+export class VehicleRentCar {
   @Prop({
     type: {
       _id: { type: mongoose.Schema.Types.ObjectId },
